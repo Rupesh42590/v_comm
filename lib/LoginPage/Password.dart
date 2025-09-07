@@ -1,19 +1,24 @@
+// ignore: file_names
 import 'package:flutter/material.dart';
 
 class PasswordField extends StatefulWidget {
-  const PasswordField({super.key});
+  final TextEditingController passwordController;
+  const PasswordField(this.passwordController, {super.key});
 
   @override
-  State<PasswordField> createState() => _PasswordFieldState();
+  State<PasswordField> createState() => _PasswordFieldState(passwordController);
 }
 
 class _PasswordFieldState extends State<PasswordField> {
   bool _obscureText = true;
-
+  final TextEditingController passwordController;
+  _PasswordFieldState(this.passwordController);
 
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: passwordController,
+
       obscureText: _obscureText,
       style: const TextStyle(color: Colors.white),
       cursorColor: Colors.cyanAccent,
@@ -52,5 +57,3 @@ class _PasswordFieldState extends State<PasswordField> {
     );
   }
 }
-
-

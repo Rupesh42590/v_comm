@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:flutter/services.dart';
 // ignore: depend_on_referenced_packages
 import 'package:google_fonts/google_fonts.dart';
-import 'package:v_comm/LoginPage/username.dart';
-import 'package:v_comm/LoginPage/Password.dart';
-import 'package:v_comm/LoginPage/sign_in.dart';
-import 'package:v_comm/LoginPage/forgot_password.dart';
-import 'package:v_comm/LoginPage/sign_up.dart';
+import 'package:v_comm/LoginPage/login_container.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -87,30 +87,7 @@ class MyApp extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
-                    const UserName(),
-                    const SizedBox(height: 20),
-                    PasswordField(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [ForgotPassword()],
-                    ),
-                    const SizedBox(height: 10),
-                    SignInButton(onPressed: () {}),
-                    const SizedBox(height: 20),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Don\'t have an account yet? ',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                        SignUpButton(onPressed: () {}),
-                      ],
-                    ),
+                    const LoginContainer(),
                   ],
                 ),
               ),

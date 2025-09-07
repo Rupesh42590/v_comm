@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 
 class UserName extends StatelessWidget {
-  const UserName({super.key});
+    final TextEditingController usernameController;
+
+  const UserName(this.usernameController,{super.key});
+  
+  
 
   @override
   Widget build(context) {
     return TextField(
+      controller: usernameController,
       style: const TextStyle(color: Colors.white),
       cursorColor: Colors.cyanAccent,
       decoration: InputDecoration(
