@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:v_comm/HomePage/homepage.dart';
 
 class SignInButton extends StatelessWidget {
   final TextEditingController usernameController;
@@ -21,19 +22,19 @@ class SignInButton extends StatelessWidget {
         elevation: 4,
       ),
       onPressed: () async {
-
         try {
-          print("Sign In button pressed");
           final email = usernameController.text.trim();
           final password = passwordController.text.trim();
 
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
-            email: email,
-            password: password,
-          );
+          UserCredential credential = await FirebaseAuth.instance
+              .signInWithEmailAndPassword(email: email, password: password);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text(" Signed in successfully")),
+          User? user=credential.user;
+          print(user?.displayName);
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Homepage()),
           );
         } on FirebaseAuthException catch (e) {
           ScaffoldMessenger.of(
