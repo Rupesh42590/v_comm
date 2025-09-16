@@ -63,7 +63,7 @@ class _HomepageState extends State<Homepage> {
           ProfileCard(name: name, dept: dept, customId: customId, isOn: isOn),
           Spacer(),
           NavigationBar(),
-          SizedBox(height: 10),
+          SizedBox(height: 30),
         ],
       ),
     );

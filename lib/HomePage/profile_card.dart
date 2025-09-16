@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ProfileCard extends StatefulWidget {
   final String name;
@@ -20,57 +21,95 @@ class ProfileCard extends StatefulWidget {
 }
 
 class _ProfileCardState extends State<ProfileCard> {
-  late bool _isOn; // local mutable copy
+  late bool _isOn;
 
   @override
   void initState() {
     super.initState();
-    _isOn = widget.isOn; // initialize local state
+    _isOn = widget.isOn;
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
-      constraints: const BoxConstraints(maxWidth: 350, minWidth: 250),
-      padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.07),
+        color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white.withOpacity(0.07)),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min, // height adapts to content
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Row(
         children: [
-          Text(
-            widget.name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          // User Info Section
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.name,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  widget.dept,
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.customId,
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withOpacity(0.5),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 5),
-          Text(
-            widget.dept,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            widget.customId,
-            style: TextStyle(color: Colors.white70, fontSize: 14),
-          ),
-          const SizedBox(height: 20),
-          CupertinoSwitch(
-            value: _isOn,
-            onChanged: (value) {
-              setState(() {
-                _isOn = value;
-              });
-            },
-            activeColor: Colors.blue,
-            trackColor: Colors.grey.shade800,
+          // MODIFICATION: Switch and Status Text are now in a Column
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CupertinoSwitch(
+                value: _isOn,
+                onChanged: (value) {
+                  setState(() {
+                    _isOn = value;
+                  });
+                },
+                // A neutral active color to let the text stand out
+                activeColor: Colors.grey.shade600,
+                trackColor: Colors.black.withOpacity(0.3),
+              ),
+              const SizedBox(height: 8), // Spacing between switch and text
+              // MODIFICATION: Added status text with conditional color
+              Text(
+                _isOn ? "Online" : "Offline",
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: _isOn
+                      ? Colors
+                            .greenAccent
+                            .shade400 // Vibrant green for "Online"
+                      : Colors.redAccent.shade200, // Modern red for "Offline"
+                ),
+              ),
+            ],
           ),
         ],
       ),
