@@ -3,13 +3,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter/services.dart';
 // ignore: depend_on_referenced_packages
-import 'package:google_fonts/google_fonts.dart';
 import 'package:v_comm/LoginPage/login_page.dart';
-import 'package:v_comm/HomePage/homepage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyApp());
 }
 

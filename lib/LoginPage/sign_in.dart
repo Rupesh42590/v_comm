@@ -34,7 +34,7 @@ class SignInButton extends StatelessWidget {
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const Homepage()),
+            MaterialPageRoute(builder: (context) =>  Homepage(user:user)),
           );
         } on FirebaseAuthException catch (e) {
           ScaffoldMessenger.of(

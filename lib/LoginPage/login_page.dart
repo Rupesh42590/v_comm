@@ -34,7 +34,7 @@ class _LoginContainerState extends State<LoginPage> {
         children: [
           const SizedBox(height: 90),
 
-          Container(
+          SizedBox(
             width: double.infinity,
 
             child: Row(

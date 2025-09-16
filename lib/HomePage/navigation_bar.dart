@@ -9,58 +9,43 @@ class NavigationBar extends StatefulWidget {
 
 class _NavigationBarState extends State<NavigationBar> {
   int selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black87,
-      body: Stack(
-        children: [
-          // Floating Navigation Bar
-          Positioned(
-            bottom: 5,
-            left: 40,
-            right: 40,
-
-            child: Container(
-              height: 60,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.15),
-                  width: 1.5,
-                ),
-              ),
-
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.search),
-                    color: selectedIndex == 0 ? Colors.blue : Colors.white,
-                    onPressed: () => setState(() => selectedIndex = 0),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications),
-                    color: selectedIndex == 1 ? Colors.blue : Colors.white,
-                    onPressed: () => setState(() => selectedIndex = 1),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.message),
-                    color: selectedIndex == 2 ? Colors.blue : Colors.white,
-                    onPressed: () => setState(() => selectedIndex = 2),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.person),
-                    color: selectedIndex == 3 ? Colors.blue : Colors.white,
-                    onPressed: () => setState(() => selectedIndex = 3),
-                  ),
-                ],
-              ),
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.only(bottom: 20, left: 40, right: 40),
+          height: 60,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.07),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.07),
+              width: 1.5,
             ),
           ),
-        ],
-      ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildIcon(Icons.search, 0),
+              _buildIcon(Icons.notifications, 1),
+              _buildIcon(Icons.calendar_today, 2),
+              _buildIcon(Icons.message, 3),
+              _buildIcon(Icons.person, 4),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIcon(IconData icon, int index) {
+    return IconButton(
+      icon: Icon(icon),
+
+      color: Colors.white,
+      onPressed: () => setState(() => selectedIndex = index),
     );
   }
 }
