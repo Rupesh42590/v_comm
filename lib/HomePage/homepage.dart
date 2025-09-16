@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' hide NavigationBar;
 import 'package:flutter/services.dart';
 import 'package:v_comm/HomePage/navigation_bar.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:v_comm/Calendar/calendar.dart';
+import 'package:v_comm/HomePage/profile_card.dart';
 
 class Homepage extends StatefulWidget {
   User? user;
@@ -59,51 +60,7 @@ class _HomepageState extends State<Homepage> {
       ),
       body: Column(
         children: [
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
-            constraints: BoxConstraints(maxWidth: 350, minWidth: 250),
-            padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.07),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: Colors.white.withOpacity(0.07)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min, // height adapts to content
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  "$name",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  "$dept",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  "$customId",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-                SizedBox(height: 20),
-                CupertinoSwitch(
-                  value: isOn,
-                  onChanged: (value) {
-                    setState(() {
-                      isOn = value;
-                    });
-                  },
-                  activeColor: Colors.blue,
-                  trackColor: Colors.grey.shade800,
-                ),
-              ],
-            ),
-          ),
+          ProfileCard(name: name, dept: dept, customId: customId, isOn: isOn),
           Spacer(),
           NavigationBar(),
           SizedBox(height: 10),

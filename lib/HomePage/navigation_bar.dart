@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:v_comm/Calendar/calendar.dart';
 
 class NavigationBar extends StatefulWidget {
   const NavigationBar({super.key});
@@ -43,9 +44,19 @@ class _NavigationBarState extends State<NavigationBar> {
   Widget _buildIcon(IconData icon, int index) {
     return IconButton(
       icon: Icon(icon),
-
       color: Colors.white,
-      onPressed: () => setState(() => selectedIndex = index),
+      onPressed: () {
+        setState(() {
+          selectedIndex = index;
+        });
+
+        if (index == 2) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CalendarPage()),
+          );
+        }
+      },
     );
   }
 }
