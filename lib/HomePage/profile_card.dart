@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ProfileCard extends StatefulWidget {
+  // Restored constructor to accept simple string values
   final String name;
   final String dept;
   final String customId;
@@ -31,6 +32,7 @@ class _ProfileCardState extends State<ProfileCard> {
 
   @override
   Widget build(BuildContext context) {
+    // This is now a simple, non-tappable container
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -38,13 +40,6 @@ class _ProfileCardState extends State<ProfileCard> {
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(30),
         border: Border.all(color: Colors.white.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
       ),
       child: Row(
         children: [
@@ -54,7 +49,7 @@ class _ProfileCardState extends State<ProfileCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.name,
+                  widget.name, // Displays the name from the constructor
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 18,
@@ -63,7 +58,7 @@ class _ProfileCardState extends State<ProfileCard> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  widget.dept,
+                  widget.dept, // Displays the department from the constructor
                   style: GoogleFonts.inter(
                     color: Colors.white.withOpacity(0.7),
                     fontSize: 16,
@@ -71,7 +66,7 @@ class _ProfileCardState extends State<ProfileCard> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.customId,
+                  widget.customId, // Displays the ID from the constructor
                   style: GoogleFonts.inter(
                     color: Colors.white.withOpacity(0.5),
                     fontSize: 14,
@@ -80,7 +75,7 @@ class _ProfileCardState extends State<ProfileCard> {
               ],
             ),
           ),
-          // MODIFICATION: Switch and Status Text are now in a Column
+          // Switch Section
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -91,22 +86,18 @@ class _ProfileCardState extends State<ProfileCard> {
                     _isOn = value;
                   });
                 },
-                // A neutral active color to let the text stand out
                 activeColor: Colors.grey.shade600,
                 trackColor: Colors.black.withOpacity(0.3),
               ),
-              const SizedBox(height: 8), // Spacing between switch and text
-              // MODIFICATION: Added status text with conditional color
+              const SizedBox(height: 8),
               Text(
                 _isOn ? "Online" : "Offline",
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: _isOn
-                      ? Colors
-                            .greenAccent
-                            .shade400 // Vibrant green for "Online"
-                      : Colors.redAccent.shade200, // Modern red for "Offline"
+                      ? Colors.greenAccent.shade400
+                      : Colors.redAccent.shade200,
                 ),
               ),
             ],

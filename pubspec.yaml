@@ -38,6 +38,10 @@ dependencies:
   firebase_auth: ^6.0.2
   cloud_firestore: ^6.0.1
   table_calendar: ^3.0.9
+  image_picker: ^1.0.7
+  firebase_storage: ^13.0.1
+
+  url_launcher: ^6.2.6
 
 dev_dependencies:
   flutter_test:

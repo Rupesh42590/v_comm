@@ -9,7 +9,6 @@ import 'package:v_comm/HomePage/profile_card.dart';
 class Homepage extends StatefulWidget {
   User? user;
   Homepage({super.key, required this.user});
-
   @override
   State<Homepage> createState() => _HomepageState();
 }
@@ -19,7 +18,6 @@ class _HomepageState extends State<Homepage> {
   String dept = "";
   String customId = "";
   bool isOn = true;
-
   @override
   void initState() {
     super.initState();
@@ -33,7 +31,6 @@ class _HomepageState extends State<Homepage> {
           .collection("users")
           .doc(widget.user!.uid)
           .get();
-
       if (doc.exists) {
         final data = doc.data();
         setState(() {

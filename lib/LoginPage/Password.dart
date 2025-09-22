@@ -1,57 +1,54 @@
-// ignore: file_names
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PasswordField extends StatefulWidget {
   final TextEditingController passwordController;
   const PasswordField(this.passwordController, {super.key});
 
   @override
-  State<PasswordField> createState() => _PasswordFieldState(passwordController);
+  State<PasswordField> createState() => _PasswordFieldState();
 }
 
 class _PasswordFieldState extends State<PasswordField> {
-  bool _obscureText = true;
-  final TextEditingController passwordController;
-  _PasswordFieldState(this.passwordController);
+  bool _isPasswordObscured = true;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: passwordController,
-
-      obscureText: _obscureText,
-      style: const TextStyle(color: Colors.white),
-      cursorColor: Colors.cyanAccent,
+      controller: widget.passwordController,
+      cursorColor: Colors.blue,
+      obscureText: _isPasswordObscured,
+      style: GoogleFonts.inter(color: Colors.white, fontSize: 16),
       decoration: InputDecoration(
         labelText: "Password",
-        labelStyle: const TextStyle(
-          color: Colors.white70,
-          backgroundColor: Colors.transparent,
-          fontFamily: 'PlusJakartaSans',
+        labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+        prefixIcon: Icon(
+          Icons.lock_outline,
+          color: Colors.white.withOpacity(0.6),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.grey),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: Color.fromARGB(255, 10, 100, 174),
-            width: 2,
-          ),
-        ),
-        filled: true,
-        fillColor: const Color.fromARGB(255, 30, 30, 30),
         suffixIcon: IconButton(
           icon: Icon(
-            _obscureText ? Icons.visibility_off : Icons.visibility,
-            color: Colors.white70,
+            _isPasswordObscured ? Icons.visibility_off : Icons.visibility,
+            color: Colors.white.withOpacity(0.6),
           ),
           onPressed: () {
             setState(() {
-              _obscureText = !_obscureText;
+              _isPasswordObscured = !_isPasswordObscured;
             });
           },
+        ),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.1),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: Colors.white.withOpacity(0.5),
+            width: 1.5,
+          ),
         ),
       ),
     );

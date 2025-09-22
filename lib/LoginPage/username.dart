@@ -1,38 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class UserName extends StatelessWidget {
-    final TextEditingController usernameController;
+  final TextEditingController usernameController;
 
-  const UserName(this.usernameController,{super.key});
-  
-  
+  const UserName(this.usernameController, {super.key});
 
   @override
-  Widget build(context) {
+  Widget build(BuildContext context) {
     return TextField(
       controller: usernameController,
-      style: const TextStyle(color: Colors.white),
-      cursorColor: Colors.cyanAccent,
+      cursorColor: Colors.blue,
+      
+      style: GoogleFonts.inter(color: Colors.white, fontSize: 16),
       decoration: InputDecoration(
-        labelText: "Username",
-        labelStyle: const TextStyle(
-          color: Colors.white70,
-          backgroundColor: Colors.transparent,
-          fontFamily: 'PlusJakartaSans',
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.grey),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: Color.fromARGB(255, 10, 100, 174),
-            width: 2,
-          ),
+        labelText: "Username (Email)",
+        labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+        prefixIcon: Icon(
+          Icons.person_outline,
+          color: Colors.white.withOpacity(0.6),
         ),
         filled: true,
-        fillColor: const Color.fromARGB(255, 30, 30, 30),
+        fillColor: Colors.white.withOpacity(0.1),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: Colors.white.withOpacity(0.5),
+            width: 1.5,
+          ),
+        ),
       ),
     );
   }

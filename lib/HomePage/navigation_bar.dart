@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:v_comm/Calendar/calendar.dart';
+import 'package:v_comm/Profile/profile.dart';
 
 class NavigationBar extends StatefulWidget {
   const NavigationBar({super.key});
@@ -18,11 +19,14 @@ class _NavigationBarState extends State<NavigationBar> {
         MaterialPageRoute(builder: (context) => const CalendarPage()),
       );
     } else {
-      // Handle other taps and update the selected index
-      setState(() {
-        selectedIndex = index;
-      });
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ProfilePage()),
+      );
     }
+    setState(() {
+      selectedIndex = index;
+    });
   }
 
   @override
@@ -43,16 +47,19 @@ class _NavigationBarState extends State<NavigationBar> {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          // MODIFICATION: Wrapped each icon in Expanded to prevent overflow
-          _buildIcon(Icons.search, 0),
-          _buildIcon(Icons.notifications, 1),
-          _buildIcon(Icons.calendar_today, 2),
-          _buildIcon(Icons.message, 3),
-          _buildIcon(Icons.person, 4),
-        ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            // MODIFICATION: Wrapped each icon in Expanded to prevent overflow
+            _buildIcon(Icons.search, 0),
+            _buildIcon(Icons.notifications, 1),
+            _buildIcon(Icons.calendar_today, 2),
+            _buildIcon(Icons.message, 3),
+            _buildIcon(Icons.person, 4),
+          ],
+        ),
       ),
     );
   }
