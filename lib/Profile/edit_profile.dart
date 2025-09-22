@@ -14,7 +14,6 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   File? _imageFile;
   bool _isLoading = false;
@@ -28,7 +27,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void _loadUserData() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      _nameController.text = user.displayName ?? "";
       FirebaseFirestore.instance.collection('users').doc(user.uid).get().then((
         doc,
       ) {
@@ -43,7 +41,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
@@ -61,6 +58,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Future<void> _saveProfile() async {
+    final phoneNumber = _phoneController.text.trim();
+    if (phoneNumber.isEmpty) {
+      _showFeedbackSnackBar("Phone number cannot be empty.");
+      return;
+    }
+    final phoneRegex = RegExp(r'^\+?[0-9]{7,}$');
+    if (!phoneRegex.hasMatch(phoneNumber)) {
+      _showFeedbackSnackBar("Please enter a valid phone number.");
+      return;
+    }
+
     if (_isLoading) return;
     setState(() => _isLoading = true);
 
@@ -78,16 +86,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
         imageUrl = await ref.getDownloadURL();
       }
 
-      await user.updateDisplayName(_nameController.text.trim());
       if (imageUrl != null) {
         await user.updatePhotoURL(imageUrl);
       }
 
       final dataToUpdate = {
-        'name': _nameController.text.trim(),
-        'phoneNumber': _phoneController.text.trim(),
+        'phoneNumber': phoneNumber,
+        'updatedAt': FieldValue.serverTimestamp(),
         if (imageUrl != null) 'photoUrl': imageUrl,
       };
+
       await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
@@ -192,12 +200,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
               const SizedBox(height: 40),
               _buildTextField(
-                controller: _nameController,
-                labelText: "Full Name",
-                icon: Icons.person_outline,
-              ),
-              const SizedBox(height: 20),
-              _buildTextField(
                 controller: _phoneController,
                 labelText: "Phone Number",
                 icon: Icons.phone_outlined,
@@ -207,20 +209,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  // MODIFICATION: Explicit styling added to match the app's theme
+                  // --- MODIFICATION: The button style is now correct ---
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white.withOpacity(0.15),
                     foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.white.withOpacity(0.1),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    textStyle: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
                   ),
-                  onPressed: _saveProfile,
+                  onPressed: _isLoading ? null : _saveProfile,
                   child: _isLoading
                       ? const SizedBox(
                           height: 20,
@@ -230,7 +229,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text("Save Changes"),
+                      : Text(
+                          "Save Changes",
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ],

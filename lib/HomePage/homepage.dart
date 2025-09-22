@@ -50,11 +50,6 @@ class _HomepageState extends State<Homepage> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-        elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-      ),
       body: Column(
         children: [
           ProfileCard(name: name, dept: dept, customId: customId, isOn: isOn),

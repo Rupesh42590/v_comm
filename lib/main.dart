@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:v_comm/LoginPage/login_page.dart';
 import 'package:v_comm/HomePage/homepage.dart';
+import 'package:v_comm/auth_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
           elevation: 0,
           systemOverlayStyle: SystemUiOverlayStyle.light,
         ),
-        body: const LoginPage(),
+        body: const AuthGate(),
       ),
     );
   }
