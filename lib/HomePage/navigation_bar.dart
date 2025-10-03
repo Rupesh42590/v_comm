@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:v_comm/Calendar/calendar.dart';
 import 'package:v_comm/Profile/profile.dart';
+import 'package:v_comm/Search/search_page.dart';
 
 class NavigationBar extends StatefulWidget {
   const NavigationBar({super.key});
@@ -18,10 +19,15 @@ class _NavigationBarState extends State<NavigationBar> {
         context,
         MaterialPageRoute(builder: (context) => const CalendarPage()),
       );
-    } else {
+    } else if (index == 4) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const ProfilePage()),
+      );
+    } else if (index == 0) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SearchPage()),
       );
     }
     setState(() {

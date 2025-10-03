@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:v_comm/LoginPage/login_page.dart';
 import 'package:v_comm/Profile/edit_profile.dart';
+// Note: You will need to create this page if it doesn't exist
+// import 'package:v_comm/Profile/notification_settings_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -85,7 +87,6 @@ class ProfilePage extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  // --- MODIFICATION: Main Profile Header is now a tappable InkWell ---
                   _profileHeaderCard(context, user: user, userEmail: userEmail),
 
                   const SizedBox(height: 30),
@@ -125,7 +126,17 @@ class ProfilePage extends StatelessWidget {
                       }
                     },
                   ),
-
+                  // _settingsTile(
+                  //   context: context,
+                  //   icon: Icons.notifications_outlined,
+                  //   title: "Notification Settings",
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(builder: (context) => const NotificationSettingsPage()),
+                  //     );
+                  //   },
+                  // ),
                   const SizedBox(height: 30),
                   _buildSectionHeader("Support & Legal"),
                   _settingsTile(
@@ -142,18 +153,25 @@ class ProfilePage extends StatelessWidget {
                     title: "Terms of Service",
                     onTap: () => _launchUrl('https://www.yourapp.com/terms'),
                   ),
+
+                  // --- MODIFIED LOGOUT BUTTON SECTION ---
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 30.0),
-                    child: SizedBox(
-                      width: double.infinity,
+                    child: Center(
+                      // Center the button horizontally
                       child: ElevatedButton(
-                        // This button will get its ripple from the global theme
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red.withOpacity(0.15),
                           foregroundColor: Colors.red.shade300,
-                          overlayColor: Colors.red.withOpacity(
-                            0.1,
-                          ), // Custom ripple for this button
+                          overlayColor: Colors.red.withOpacity(0.1),
+                          // Add padding to give the content breathing room
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 40,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
                         ),
                         onPressed: () async {
                           await FirebaseAuth.instance.signOut();
@@ -165,7 +183,8 @@ class ProfilePage extends StatelessWidget {
                           );
                         },
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize:
+                              MainAxisSize.min, // Shrink Row to fit content
                           children: [
                             const Icon(Icons.logout, size: 20),
                             const SizedBox(width: 10),
@@ -173,6 +192,7 @@ class ProfilePage extends StatelessWidget {
                               "Logout",
                               style: GoogleFonts.inter(
                                 color: Colors.red.shade300,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
@@ -210,7 +230,6 @@ class ProfilePage extends StatelessWidget {
             splashColor: Colors.white.withOpacity(0.1),
             highlightColor: Colors.white.withOpacity(0.05),
             onTap: () {
-              // Also navigates to Edit Profile page
               Navigator.push(
                 context,
                 MaterialPageRoute(
