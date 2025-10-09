@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:v_comm/Calendar/calendar.dart';
 import 'package:v_comm/Profile/profile.dart';
 import 'package:v_comm/Search/search_page.dart';
+import 'package:v_comm/Chat/chat_home_page.dart';
 
 class NavigationBar extends StatefulWidget {
   const NavigationBar({super.key});
@@ -14,12 +15,12 @@ class _NavigationBarState extends State<NavigationBar> {
   int selectedIndex = 0; // Home is selected by default
 
   void _onItemTapped(int index) {
-    if (index == 2) {
+    if (index == 1) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const CalendarPage()),
       );
-    } else if (index == 4) {
+    } else if (index == 3) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const ProfilePage()),
@@ -29,7 +30,13 @@ class _NavigationBarState extends State<NavigationBar> {
         context,
         MaterialPageRoute(builder: (context) => const SearchPage()),
       );
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ChatHomePage()),
+      );
     }
+
     setState(() {
       selectedIndex = index;
     });
@@ -60,10 +67,9 @@ class _NavigationBarState extends State<NavigationBar> {
           children: [
             // MODIFICATION: Wrapped each icon in Expanded to prevent overflow
             _buildIcon(Icons.search, 0),
-            _buildIcon(Icons.notifications, 1),
-            _buildIcon(Icons.calendar_today, 2),
-            _buildIcon(Icons.message, 3),
-            _buildIcon(Icons.person, 4),
+            _buildIcon(Icons.calendar_today, 1),
+            _buildIcon(Icons.message, 2),
+            _buildIcon(Icons.person, 3),
           ],
         ),
       ),
