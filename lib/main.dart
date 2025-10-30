@@ -23,26 +23,25 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData().copyWith(
+      theme: ThemeData(
+        // MODIFICATION: Changed ThemeData() to ThemeData.dark()
+        brightness: Brightness.dark,
+        primaryColor: Colors.grey[900],
+        // This is the key part: customize the color scheme
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.white,
+          // Set the glow color here. Using transparent removes it.
+          // You could also use something like Colors.grey.
+          secondary: Colors.transparent,
+        ),
         textSelectionTheme: TextSelectionThemeData(
-          cursorColor: Colors.blueAccent, // 1. The blinking cursor line
-          // MODIFICATION: THIS IS THE LINE THAT CHANGES THE HIGHLIGHT
-          selectionColor: Colors.blueAccent.withOpacity(
-            0.4,
-          ), // 2. The highlight background
-
-          selectionHandleColor: Colors.blueAccent, // 3. The teardrop handles
+          cursorColor: Colors.blueAccent,
+          selectionColor: Colors.blueAccent.withOpacity(0.4),
+          selectionHandleColor: Colors.blueAccent,
         ),
         scaffoldBackgroundColor: const Color.fromARGB(255, 0, 0, 0),
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-          elevation: 0,
-          systemOverlayStyle: SystemUiOverlayStyle.light,
-        ),
-        body: const AuthGate(),
-      ),
+      home: const AuthGate(), // MODIFICATION: Removed the extra Scaffold
     );
   }
 }

@@ -52,6 +52,7 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       body: Column(
         children: [
+          SizedBox(height: 100),
           ProfileCard(name: name, dept: dept, customId: customId, isOn: isOn),
           Spacer(),
           NavigationBar(),

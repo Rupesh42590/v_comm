@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,7 +25,7 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     _loadInitialData();
     _searchController.addListener(() {
-      setState(() {});
+      setState(() {}); // To update the UI for the clear button
       _filterUsers();
     });
   }
@@ -155,85 +154,82 @@ class _SearchPageState extends State<SearchPage> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.black, Color(0xFF111111), Colors.black],
+          ),
+        ),
+        // MODIFICATION: SafeArea ensures the UI avoids notches and system bars.
         child: SafeArea(
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.black, Color(0xFF111111), Colors.black],
+          child: Column(
+            children: [
+              // MODIFICATION: Combined header with back button and search bar.
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 8, 16, 8),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.white,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: "Search...",
+                            hintStyle: TextStyle(
+                              color: Colors.white.withOpacity(0.5),
+                            ),
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: Colors.white.withOpacity(0.7),
+                            ),
+                            suffixIcon: hasSearchQuery
+                                ? IconButton(
+                                    icon: const Icon(
+                                      Icons.close,
+                                      color: Colors.white70,
+                                    ),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                  )
+                                : null,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: TextField(
-                            controller: _searchController,
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: "Search by name, dept, or ID",
-                              hintStyle: TextStyle(
-                                color: Colors.white.withOpacity(0.5),
-                              ),
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: Colors.white.withOpacity(0.7),
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 14,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: TextButton(
-                          onPressed: () {
-                            if (hasSearchQuery) {
-                              _searchController.clear();
-                              FocusScope.of(context).unfocus();
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
-                          child: Text(
-                            "Cancel",
-                            style: GoogleFonts.inter(
-                              color: Colors.blueAccent,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : hasSearchQuery
-                      ? _buildSearchResults()
-                      : _buildSearchHistory(),
-                ),
-              ],
-            ),
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : hasSearchQuery
+                    ? _buildSearchResults()
+                    : _buildSearchHistory(),
+              ),
+            ],
           ),
         ),
       ),
@@ -299,10 +295,10 @@ class _SearchPageState extends State<SearchPage> {
       children: [
         Expanded(
           child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: SizedBox(
-                width: double.infinity,
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -316,18 +312,10 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                     const SizedBox(height: 16),
                     if (_recentSearchQueries.isEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            top: 20.0,
-                          ), // Adjust as needed
-                          child: Text(
-                            "Your search history is empty.",
-                            style: GoogleFonts.inter(
-                              color: Colors.white.withOpacity(0.6),
-                              fontSize: 16,
-                            ),
-                          ),
+                      Text(
+                        "Your search history is empty.",
+                        style: GoogleFonts.inter(
+                          color: Colors.white.withOpacity(0.6),
                         ),
                       )
                     else

@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+<key>NSUserNotificationsUsageDescription</key>
+    <string>We need notification permission to remind you about your events</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -51,5 +53,14 @@
 	<string>This app needs access to your camera to let you take a new profile picture.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs camera access to let you take a new profile picture.</string>
+	
+	<!-- Notification Permissions -->
+	<key>UIBackgroundModes</key>
+<array>
+    <string>fetch</string>
+    <string>remote-notification</string>
+</array>
+<key>NSUserNotificationsUsageDescription</key>
+<string>We need notification permission to remind you about your events</string>
 </dict>
 </plist>
