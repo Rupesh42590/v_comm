@@ -21,43 +21,17 @@ class _ChatHomePageState extends State<ChatHomePage> {
   String _filterType = 'all';
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
-  StreamSubscription<QuerySnapshot>? _chatsSubscription;
 
   @override
   void initState() {
     super.initState();
     _fetchAllUsers();
-    _setupChatsListener();
   }
 
   @override
   void dispose() {
-    _chatsSubscription?.cancel();
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _setupChatsListener() {
-    if (currentUser == null) return;
-
-    _chatsSubscription = FirebaseFirestore.instance
-        .collection('chats')
-        .where('participants', arrayContains: currentUser!.uid)
-        .orderBy('lastMessageTimestamp', descending: true)
-        .snapshots()
-        .listen(
-          (snapshot) {
-            if (mounted) {
-              setState(() {
-                // This triggers a rebuild to re-evaluate the chat list
-                // with the new client-side filter.
-              });
-            }
-          },
-          onError: (error) {
-            print('Chats listener error: $error');
-          },
-        );
   }
 
   Future<void> _fetchAllUsers() async {
@@ -92,40 +66,41 @@ class _ChatHomePageState extends State<ChatHomePage> {
     );
   }
 
+  // **FIXED METHOD**: This function now correctly clears the unread count
+  // for one-on-one chats when a user navigates to the chat page.
   void _navigateToChat(Map<String, dynamic> otherUser) {
     if (currentUser == null) return;
 
     List<String> ids = [currentUser!.uid, otherUser['id']]..sort();
     final chatRoomId = ids.join('_');
-
-    FirebaseFirestore.instance
+    final chatRef = FirebaseFirestore.instance
         .collection('chats')
-        .doc(chatRoomId)
+        .doc(chatRoomId);
+
+    // Get the document to either create it or mark it as read.
+    chatRef
         .get()
         .then((doc) {
-          if (!doc.exists) {
-            // Create the chat document but it will be hidden on the homepage
-            // until a real message is sent.
-            return FirebaseFirestore.instance
-                .collection('chats')
-                .doc(chatRoomId)
-                .set({
-                  'participants': [currentUser!.uid, otherUser['id']],
-                  'isGroup': false,
-                  'createdAt': FieldValue.serverTimestamp(),
-                  'lastMessage':
-                      'Chat started', // This is the key for the filter
-                  'lastMessageTimestamp': FieldValue.serverTimestamp(),
-                  'lastMessageSenderId': currentUser!.uid,
-                  'unreadCount': {currentUser!.uid: 0, otherUser['id']: 0},
-                  'archivedBy': {
-                    currentUser!.uid: false,
-                    otherUser['id']: false,
-                  },
-                });
+          if (doc.exists) {
+            // If the chat already exists, update the unread count to 0.
+            // This will immediately remove the highlight and red dot.
+            chatRef.update({'unreadCount.${currentUser!.uid}': 0});
+          } else {
+            // If the chat is new (from search), create it with unread count as 0.
+            chatRef.set({
+              'participants': [currentUser!.uid, otherUser['id']],
+              'isGroup': false,
+              'createdAt': FieldValue.serverTimestamp(),
+              'lastMessage': 'Chat started',
+              'lastMessageTimestamp': FieldValue.serverTimestamp(),
+              'lastMessageSenderId': currentUser!.uid,
+              'unreadCount': {currentUser!.uid: 0, otherUser['id']: 0},
+              'archivedBy': {currentUser!.uid: false, otherUser['id']: false},
+            });
           }
         })
         .then((_) {
+          // After updating Firestore, navigate to the chat page.
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -136,12 +111,13 @@ class _ChatHomePageState extends State<ChatHomePage> {
               ),
             ),
           ).then((_) {
-            // **FIX:** State is now updated AFTER the chat page is closed.
-            // This prevents the UI from glitching back to the chats list.
-            setState(() {
-              _isSearching = false;
-              _searchController.clear();
-            });
+            // This part just resets the search UI when you come back.
+            if (_isSearching) {
+              setState(() {
+                _isSearching = false;
+                _searchController.clear();
+              });
+            }
           });
         });
   }
@@ -656,6 +632,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
     String groupName,
     List<dynamic> participants,
   ) {
+    // Correctly clears the unread count before navigating for groups.
     FirebaseFirestore.instance.collection('chats').doc(groupId).update({
       'unreadCount.${currentUser!.uid}': 0,
     });
@@ -674,7 +651,11 @@ class _ChatHomePageState extends State<ChatHomePage> {
         ),
       ),
     ).then((_) {
-      setState(() {});
+      // Rebuild the state when returning, if necessary.
+      // The StreamBuilder often handles this automatically.
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -722,10 +703,8 @@ class _ChatHomePageState extends State<ChatHomePage> {
           );
         }
 
-        // This is the main logic change. We get all docs first.
         final allDocs = snapshot.data?.docs ?? [];
 
-        // First, apply the filters for archived, unread, etc.
         final filteredDocs = allDocs.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
           final isArchived =
@@ -754,17 +733,12 @@ class _ChatHomePageState extends State<ChatHomePage> {
           }
         }).toList();
 
-        // ** NEW, IMPORTANT LOGIC **
-        // Now, filter out the chats that haven't actually started.
         final activeChats = filteredDocs.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
           final isGroup = data['isGroup'] ?? false;
 
-          // Always show groups once they are created.
           if (isGroup) return true;
 
-          // For one-on-one chats, only show them if the last message
-          // is NOT the default placeholder message.
           return data['lastMessage'] != 'Chat started';
         }).toList();
 
@@ -810,7 +784,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
           padding: const EdgeInsets.only(top: 8.0, bottom: 80.0),
           itemCount: activeChats.length,
           itemBuilder: (context, index) => _ChatListItem(
-            key: ValueKey(activeChats[index].id), // Use a stable key
+            key: ValueKey(activeChats[index].id),
             chatDoc: activeChats[index],
             currentUser: currentUser!,
             onUserTap: _navigateToChat,
@@ -1126,7 +1100,6 @@ class _ChatHomePageState extends State<ChatHomePage> {
   }
 }
 
-// NOTE: The _ChatListItem class remains unchanged.
 class _ChatListItem extends StatelessWidget {
   final DocumentSnapshot chatDoc;
   final User currentUser;
@@ -1241,17 +1214,25 @@ class _ChatListItem extends StatelessWidget {
     final String subtitle = chatData['lastMessage'] ?? '';
     final Timestamp? timestamp = chatData['lastMessageTimestamp'];
 
+    final itemBackgroundColor = unreadCount > 0
+        ? Colors.white.withOpacity(0.15)
+        : const Color(0xFF1A1A1A);
+
     return Container(
       decoration: BoxDecoration(
-        color: unreadCount > 0
-            ? Colors.white.withOpacity(0.15)
-            : const Color(0xFF1A1A1A),
+        color: itemBackgroundColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white.withOpacity(0.2)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: _buildAvatar(isGroup, otherUserId, unreadCount),
+        leading: _buildAvatar(
+          context,
+          isGroup,
+          otherUserId,
+          unreadCount,
+          itemBackgroundColor,
+        ),
         title: StreamBuilder<String>(
           stream: _getChatNameStream(isGroup, chatData, otherUserId),
           builder: (context, snapshot) => Text(
@@ -1344,15 +1325,23 @@ class _ChatListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar(bool isGroup, String otherUserId, int unreadCount) {
+  Widget _buildAvatar(
+    BuildContext context,
+    bool isGroup,
+    String otherUserId,
+    int unreadCount,
+    Color itemBackgroundColor,
+  ) {
+    Widget avatarWidget;
+
     if (isGroup) {
-      return CircleAvatar(
+      avatarWidget = CircleAvatar(
         radius: 28,
         backgroundColor: Colors.green,
         child: const Icon(Icons.group, color: Colors.white, size: 28),
       );
     } else {
-      return StreamBuilder<DocumentSnapshot>(
+      avatarWidget = StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
             .doc(otherUserId)
@@ -1388,6 +1377,33 @@ class _ChatListItem extends StatelessWidget {
         },
       );
     }
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        avatarWidget,
+        if (unreadCount > 0)
+          Positioned(
+            right: -2,
+            top: -2,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: itemBackgroundColor,
+                shape: BoxShape.circle,
+              ),
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: const BoxDecoration(
+                  color: Colors.redAccent,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   String _formatTimestamp(Timestamp timestamp) {
