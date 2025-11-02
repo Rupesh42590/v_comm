@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,11 +19,45 @@ class _ChatHomePageState extends State<ChatHomePage> {
   List<Map<String, dynamic>> _allUsers = [];
   bool _isLoading = true;
   String _filterType = 'all';
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+  StreamSubscription<QuerySnapshot>? _chatsSubscription;
 
   @override
   void initState() {
     super.initState();
     _fetchAllUsers();
+    _setupChatsListener();
+  }
+
+  @override
+  void dispose() {
+    _chatsSubscription?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _setupChatsListener() {
+    if (currentUser == null) return;
+
+    _chatsSubscription = FirebaseFirestore.instance
+        .collection('chats')
+        .where('participants', arrayContains: currentUser!.uid)
+        .orderBy('lastMessageTimestamp', descending: true)
+        .snapshots()
+        .listen(
+          (snapshot) {
+            if (mounted) {
+              setState(() {
+                // This triggers a rebuild to re-evaluate the chat list
+                // with the new client-side filter.
+              });
+            }
+          },
+          onError: (error) {
+            print('Chats listener error: $error');
+          },
+        );
   }
 
   Future<void> _fetchAllUsers() async {
@@ -37,7 +73,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
           .toList();
       if (mounted) setState(() => _allUsers = users);
     } catch (e) {
-      if (mounted) _showSnackBar('Error: $e', isError: true);
+      if (mounted) _showSnackBar('Error fetching users: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -58,17 +94,56 @@ class _ChatHomePageState extends State<ChatHomePage> {
 
   void _navigateToChat(Map<String, dynamic> otherUser) {
     if (currentUser == null) return;
+
     List<String> ids = [currentUser!.uid, otherUser['id']]..sort();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ChatPage(
-          chatRoomId: ids.join('_'),
-          otherUser: otherUser,
-          isGroup: false,
-        ),
-      ),
-    );
+    final chatRoomId = ids.join('_');
+
+    FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatRoomId)
+        .get()
+        .then((doc) {
+          if (!doc.exists) {
+            // Create the chat document but it will be hidden on the homepage
+            // until a real message is sent.
+            return FirebaseFirestore.instance
+                .collection('chats')
+                .doc(chatRoomId)
+                .set({
+                  'participants': [currentUser!.uid, otherUser['id']],
+                  'isGroup': false,
+                  'createdAt': FieldValue.serverTimestamp(),
+                  'lastMessage':
+                      'Chat started', // This is the key for the filter
+                  'lastMessageTimestamp': FieldValue.serverTimestamp(),
+                  'lastMessageSenderId': currentUser!.uid,
+                  'unreadCount': {currentUser!.uid: 0, otherUser['id']: 0},
+                  'archivedBy': {
+                    currentUser!.uid: false,
+                    otherUser['id']: false,
+                  },
+                });
+          }
+        })
+        .then((_) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatPage(
+                chatRoomId: chatRoomId,
+                otherUser: otherUser,
+                isGroup: false,
+              ),
+            ),
+          ).then((_) {
+            // **FIX:** State is now updated AFTER the chat page is closed.
+            // This prevents the UI from glitching back to the chats list.
+            setState(() {
+              _isSearching = false;
+              _searchController.clear();
+            });
+          });
+        });
   }
 
   Future<void> _archiveChat(String chatId, {bool unarchive = false}) async {
@@ -77,8 +152,8 @@ class _ChatHomePageState extends State<ChatHomePage> {
       'archivedBy.${currentUser!.uid}': !unarchive,
     });
 
-    if (!unarchive && mounted) {
-      _showSnackBar('Chat archived.');
+    if (mounted) {
+      _showSnackBar(unarchive ? 'Chat unarchived.' : 'Chat archived.');
     }
   }
 
@@ -188,6 +263,69 @@ class _ChatHomePageState extends State<ChatHomePage> {
       }
     }
     return false;
+  }
+
+  void _showNewChatOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.group_add,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              title: Text(
+                'New Group',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              subtitle: Text(
+                'Create a group with multiple people',
+                style: GoogleFonts.inter(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 13,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _navigateToGroupChat();
+              },
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
   }
 
   void _navigateToGroupChat() {
@@ -500,6 +638,12 @@ class _ChatHomePageState extends State<ChatHomePage> {
         'lastMessage': 'Group created',
         'lastMessageTimestamp': FieldValue.serverTimestamp(),
         'lastMessageSenderId': currentUser!.uid,
+        'unreadCount': {
+          for (var id in [currentUser!.uid, ...memberIds]) id: 0,
+        },
+        'archivedBy': {
+          for (var id in [currentUser!.uid, ...memberIds]) id: false,
+        },
       });
       if (mounted) _showSnackBar('Group "$groupName" created!');
     } catch (e) {
@@ -512,6 +656,9 @@ class _ChatHomePageState extends State<ChatHomePage> {
     String groupName,
     List<dynamic> participants,
   ) {
+    FirebaseFirestore.instance.collection('chats').doc(groupId).update({
+      'unreadCount.${currentUser!.uid}': 0,
+    });
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -526,10 +673,12 @@ class _ChatHomePageState extends State<ChatHomePage> {
           isGroup: true,
         ),
       ),
-    );
+    ).then((_) {
+      setState(() {});
+    });
   }
 
-  Widget _buildChatsList({required Function(Map<String, dynamic>) onUserTap}) {
+  Widget _buildChatsList() {
     if (currentUser == null) {
       return Center(
         child: Text(
@@ -552,13 +701,82 @@ class _ChatHomePageState extends State<ChatHomePage> {
           );
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
+                const SizedBox(height: 16),
+                Text(
+                  'Error loading chats',
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Please check your connection',
+                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 14),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // This is the main logic change. We get all docs first.
+        final allDocs = snapshot.data?.docs ?? [];
+
+        // First, apply the filters for archived, unread, etc.
+        final filteredDocs = allDocs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          final isArchived =
+              (data['archivedBy']
+                  as Map<String, dynamic>?)?[currentUser!.uid] ??
+              false;
+
+          if (_filterType == 'archived') return isArchived;
+          if (isArchived) return false;
+
+          final bool isGroup = data['isGroup'] ?? false;
+          switch (_filterType) {
+            case 'unread':
+              final unread =
+                  ((data['unreadCount']
+                      as Map<String, dynamic>?)?[currentUser!.uid] ??
+                  0);
+              return unread > 0;
+            case 'groups':
+              return isGroup;
+            case 'personal':
+              return !isGroup;
+            case 'all':
+            default:
+              return true;
+          }
+        }).toList();
+
+        // ** NEW, IMPORTANT LOGIC **
+        // Now, filter out the chats that haven't actually started.
+        final activeChats = filteredDocs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          final isGroup = data['isGroup'] ?? false;
+
+          // Always show groups once they are created.
+          if (isGroup) return true;
+
+          // For one-on-one chats, only show them if the last message
+          // is NOT the default placeholder message.
+          return data['lastMessage'] != 'Chat started';
+        }).toList();
+
+        if (activeChats.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.chat_bubble_outline,
+                  _filterType == 'all'
+                      ? Icons.chat_bubble_outline
+                      : Icons.filter_list_off,
                   size: 80,
                   color: Colors.white.withOpacity(0.3),
                 ),
@@ -572,62 +790,15 @@ class _ChatHomePageState extends State<ChatHomePage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  "Start a conversation or create a group",
-                  style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        final docsFromStream = snapshot.data!.docs;
-
-        final filteredDocs = docsFromStream.where((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          final isArchived =
-              (data['archivedBy']
-                  as Map<String, dynamic>?)?[currentUser!.uid] ??
-              false;
-          if (isArchived) return false;
-
-          final bool isGroup = data['isGroup'] ?? false;
-          switch (_filterType) {
-            case 'all':
-              return true;
-            case 'unread':
-              return ((data['unreadCount']
-                          as Map<String, dynamic>?)?[currentUser!.uid] ??
-                      0) >
-                  0;
-            case 'groups':
-              return isGroup;
-            case 'personal':
-              return !isGroup;
-            default:
-              return true;
-          }
-        }).toList();
-
-        if (filteredDocs.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.filter_list_off,
-                  size: 64,
-                  color: Colors.white.withOpacity(0.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  "No chats in this filter",
-                  style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 16,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                  child: Text(
+                    "Tap the search icon to find users and start a new chat.",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withOpacity(0.6),
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],
@@ -637,15 +808,108 @@ class _ChatHomePageState extends State<ChatHomePage> {
 
         return ListView.builder(
           padding: const EdgeInsets.only(top: 8.0, bottom: 80.0),
-          itemCount: filteredDocs.length,
+          itemCount: activeChats.length,
           itemBuilder: (context, index) => _ChatListItem(
-            key: ValueKey(filteredDocs[index].id),
-            chatDoc: filteredDocs[index],
+            key: ValueKey(activeChats[index].id), // Use a stable key
+            chatDoc: activeChats[index],
             currentUser: currentUser!,
-            onUserTap: onUserTap,
+            onUserTap: _navigateToChat,
             onGroupTap: _navigateToGroupChatPage,
             onConfirmDelete: _confirmDeleteChat,
             onArchive: _archiveChat,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildUserSearchList(String searchQuery) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+
+    final filteredUsers = _allUsers.where((user) {
+      final query = searchQuery.toLowerCase();
+      return (user['name'] as String? ?? '').toLowerCase().contains(query) ||
+          (user['email'] as String? ?? '').toLowerCase().contains(query);
+    }).toList();
+
+    if (filteredUsers.isEmpty && searchQuery.isNotEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.person_off_outlined,
+                size: 48,
+                color: Colors.white.withOpacity(0.5),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'No users found',
+                style: GoogleFonts.inter(color: Colors.white.withOpacity(0.7)),
+              ),
+              Text(
+                'Try a different search term',
+                style: GoogleFonts.inter(color: Colors.white54),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 8.0, bottom: 80.0),
+      itemCount: filteredUsers.length,
+      itemBuilder: (context, index) {
+        final user = filteredUsers[index];
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.white.withOpacity(0.05),
+          ),
+          child: ListTile(
+            onTap: () => _navigateToChat(user),
+            leading: CircleAvatar(
+              backgroundColor: Colors.white.withOpacity(0.2),
+              backgroundImage: user['photoUrl'] != null
+                  ? NetworkImage(user['photoUrl'])
+                  : null,
+              child: user['photoUrl'] == null
+                  ? Text(
+                      (user['name'] ?? 'U')[0].toUpperCase(),
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : null,
+            ),
+            title: Text(
+              user['name'] ?? 'No Name',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            subtitle: Text(
+              user['email'] ?? '',
+              style: GoogleFonts.inter(
+                color: Colors.white.withOpacity(0.6),
+                fontSize: 12,
+              ),
+            ),
+            trailing: Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.white.withOpacity(0.5),
+            ),
           ),
         );
       },
@@ -685,26 +949,83 @@ class _ChatHomePageState extends State<ChatHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final appBarTitle = _isSearching
+        ? 'Search Users'
+        : (_filterType == 'archived' ? 'Archived Chats' : 'Messages');
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A1A1A),
         elevation: 0,
         shape: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.2))),
-        // MODIFICATION: Added a leading back button
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          icon: Icon(
+            _isSearching ? Icons.close : Icons.arrow_back_ios_new,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            if (_isSearching) {
+              setState(() {
+                _isSearching = false;
+                _searchController.clear();
+              });
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
         ),
         title: Text(
-          "Messages",
+          appBarTitle,
           style: GoogleFonts.inter(
             fontWeight: FontWeight.bold,
-            fontSize: 24, // Adjusted font size for better balance
+            fontSize: 24,
             color: Colors.white,
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Colors.white),
+            onPressed: () {
+              setState(() => _isSearching = true);
+            },
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onSelected: (value) {
+              if (value == 'archived') {
+                setState(() {
+                  _filterType = 'archived';
+                  _isSearching = false;
+                  _searchController.clear();
+                });
+              } else if (value == 'refresh') {
+                setState(() {});
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'refresh',
+                child: Text(
+                  'Refresh',
+                  style: GoogleFonts.inter(color: Colors.white),
+                ),
+              ),
+              PopupMenuItem(
+                value: 'archived',
+                child: Text(
+                  'Archived Chats',
+                  style: GoogleFonts.inter(color: Colors.white),
+                ),
+              ),
+            ],
+            color: const Color(0xFF2A2A2A),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ],
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -716,10 +1037,46 @@ class _ChatHomePageState extends State<ChatHomePage> {
         ),
         child: Column(
           children: [
-            // MODIFICATION: Added padding for spacing
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Container(
+            if (_isSearching)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  style: GoogleFonts.inter(color: Colors.white),
+                  onChanged: (value) => setState(() {}),
+                  decoration: InputDecoration(
+                    hintText: 'Search users...',
+                    hintStyle: GoogleFonts.inter(
+                      color: Colors.white.withOpacity(0.5),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.1),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              color: Colors.white.withOpacity(0.7),
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {});
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              )
+            else
+              Container(
                 height: 60,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16.0,
@@ -735,52 +1092,58 @@ class _ChatHomePageState extends State<ChatHomePage> {
                   ],
                 ),
               ),
-            ),
-            Expanded(child: _buildChatsList(onUserTap: _navigateToChat)),
-          ],
-        ),
-      ),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: Colors.white.withOpacity(0.25)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.4),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+            Expanded(
+              child: _isSearching
+                  ? _buildUserSearchList(_searchController.text)
+                  : _buildChatsList(),
             ),
           ],
         ),
-        child: FloatingActionButton(
-          onPressed: _navigateToGroupChat,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: const Icon(Icons.add, color: Colors.white, size: 28),
-        ),
       ),
+      floatingActionButton: _isSearching
+          ? null
+          : Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.white.withOpacity(0.25)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: FloatingActionButton(
+                onPressed: _showNewChatOptions,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                child: const Icon(Icons.add, color: Colors.white, size: 28),
+              ),
+            ),
     );
   }
 }
 
+// NOTE: The _ChatListItem class remains unchanged.
 class _ChatListItem extends StatelessWidget {
   final DocumentSnapshot chatDoc;
   final User currentUser;
   final Function(Map<String, dynamic>) onUserTap;
   final Function(String, String, List<dynamic>) onGroupTap;
   final Future<bool> Function(String, bool, String?, String) onConfirmDelete;
-  final Function(String) onArchive;
+  final void Function(String, {bool unarchive}) onArchive;
 
   const _ChatListItem({
-    super.key,
+    required Key key,
     required this.chatDoc,
     required this.currentUser,
     required this.onUserTap,
     required this.onGroupTap,
     required this.onConfirmDelete,
     required this.onArchive,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -789,22 +1152,26 @@ class _ChatListItem extends StatelessWidget {
     final int unreadCount =
         (chatData['unreadCount'] as Map<String, dynamic>?)?[currentUser.uid] ??
         0;
+    final bool isArchived =
+        (chatData['archivedBy'] as Map<String, dynamic>?)?[currentUser.uid] ??
+        false;
 
-    final otherUserId = !isGroup && chatData['participants'] != null
+    final otherUserId = !isGroup && (chatData['participants'] as List?) != null
         ? (chatData['participants'] as List).firstWhere(
             (id) => id != currentUser.uid,
             orElse: () => '',
           )
         : '';
 
-    if (!isGroup && otherUserId.isEmpty) return const SizedBox.shrink();
+    if (!isGroup && otherUserId.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return FutureBuilder<String>(
       future: _getChatName(isGroup, chatData, otherUserId),
       builder: (context, snapshot) {
         final chatName = snapshot.data ?? (isGroup ? 'Group' : 'Chat');
 
-        // MODIFICATION: Increased vertical padding for more spacing
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           child: ClipRRect(
@@ -813,12 +1180,15 @@ class _ChatListItem extends StatelessWidget {
               key: key!,
               background: Container(
                 decoration: BoxDecoration(
-                  color: Colors.green,
+                  color: isArchived ? Colors.blue : Colors.green,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.only(left: 20),
-                child: const Icon(Icons.archive, color: Colors.white),
+                child: Icon(
+                  isArchived ? Icons.unarchive : Icons.archive,
+                  color: Colors.white,
+                ),
               ),
               secondaryBackground: Container(
                 decoration: BoxDecoration(
@@ -844,7 +1214,7 @@ class _ChatListItem extends StatelessWidget {
               },
               onDismissed: (direction) {
                 if (direction == DismissDirection.startToEnd) {
-                  onArchive(chatDoc.id);
+                  onArchive(chatDoc.id, unarchive: isArchived);
                 }
               },
               child: _buildContent(
@@ -927,6 +1297,28 @@ class _ChatListItem extends StatelessWidget {
                       : FontWeight.normal,
                 ),
               ),
+            if (unreadCount > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade400,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    unreadCount > 99 ? '99+' : unreadCount.toString(),
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
         onTap: () {
@@ -953,15 +1345,14 @@ class _ChatListItem extends StatelessWidget {
   }
 
   Widget _buildAvatar(bool isGroup, String otherUserId, int unreadCount) {
-    Widget avatar;
     if (isGroup) {
-      avatar = CircleAvatar(
+      return CircleAvatar(
         radius: 28,
         backgroundColor: Colors.green,
         child: const Icon(Icons.group, color: Colors.white, size: 28),
       );
     } else {
-      avatar = StreamBuilder<DocumentSnapshot>(
+      return StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
             .doc(otherUserId)
@@ -997,36 +1388,6 @@ class _ChatListItem extends StatelessWidget {
         },
       );
     }
-
-    return Stack(
-      children: [
-        avatar,
-        if (unreadCount > 0)
-          Positioned(
-            right: 0,
-            top: 0,
-            child: Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black, width: 2),
-              ),
-              constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
-              child: Center(
-                child: Text(
-                  unreadCount.toString(),
-                  style: GoogleFonts.inter(
-                    color: Colors.black,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
   }
 
   String _formatTimestamp(Timestamp timestamp) {

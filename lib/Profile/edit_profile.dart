@@ -1,9 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -15,7 +12,6 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final _phoneController = TextEditingController();
-  File? _imageFile;
   bool _isLoading = false;
 
   @override
@@ -45,24 +41,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 50,
-    );
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
-    }
-  }
-
   Future<void> _saveProfile() async {
     final phoneNumber = _phoneController.text.trim();
+
     if (phoneNumber.isEmpty) {
       _showFeedbackSnackBar("Phone number cannot be empty.");
       return;
     }
+
     final phoneRegex = RegExp(r'^\+?[0-9]{7,}$');
     if (!phoneRegex.hasMatch(phoneNumber)) {
       _showFeedbackSnackBar("Please enter a valid phone number.");
@@ -76,24 +62,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception("User not found");
 
-      String? imageUrl;
-      if (_imageFile != null) {
-        final ref = FirebaseStorage.instance
-            .ref()
-            .child('profile_pictures')
-            .child('${user.uid}.jpg');
-        await ref.putFile(_imageFile!);
-        imageUrl = await ref.getDownloadURL();
-      }
-
-      if (imageUrl != null) {
-        await user.updatePhotoURL(imageUrl);
-      }
-
       final dataToUpdate = {
         'phoneNumber': phoneNumber,
         'updatedAt': FieldValue.serverTimestamp(),
-        if (imageUrl != null) 'photoUrl': imageUrl,
       };
 
       await FirebaseFirestore.instance
@@ -158,58 +129,40 @@ class _EditProfilePageState extends State<EditProfilePage> {
           child: Column(
             children: [
               const SizedBox(height: 20),
-              GestureDetector(
-                onTap: _pickImage,
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.white.withOpacity(0.1),
-                      backgroundImage: _imageFile != null
-                          ? FileImage(_imageFile!) as ImageProvider
-                          : (user?.photoURL != null
-                                ? NetworkImage(user!.photoURL!)
-                                : null),
-                      child: (_imageFile == null && user?.photoURL == null)
-                          ? const Icon(
-                              Icons.person,
-                              size: 60,
-                              color: Colors.white54,
-                            )
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade800,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.black, width: 2),
-                        ),
-                        child: const Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ],
+
+              // --- PROFILE IMAGE (VIEW ONLY) ---
+              Center(
+                child: CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.white.withOpacity(0.1),
+                  backgroundImage: user?.photoURL != null
+                      ? NetworkImage(user!.photoURL!)
+                      : null,
+                  child: (user?.photoURL == null)
+                      ? const Icon(
+                          Icons.person,
+                          size: 60,
+                          color: Colors.white54,
+                        )
+                      : null,
                 ),
               ),
+
               const SizedBox(height: 40),
+
+              // --- PHONE INPUT ---
               _buildTextField(
                 controller: _phoneController,
                 labelText: "Phone Number",
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
               ),
+
               const SizedBox(height: 40),
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  // --- MODIFICATION: The button style is now correct ---
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white.withOpacity(0.15),
                     foregroundColor: Colors.white,

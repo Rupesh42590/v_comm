@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:v_comm/Chat/chat_page.dart'; // Import your chat page
+import 'package:v_comm/Chat/chat_page.dart';
 
 class UserDetailsPopup extends StatelessWidget {
   final Map<String, dynamic> userData;
@@ -13,11 +13,13 @@ class UserDetailsPopup extends StatelessWidget {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
 
-    List<String> ids = [currentUser.uid, userData['id']];
+    final String uid = userData['uid'] ?? userData['id'];
+
+    List<String> ids = [currentUser.uid, uid];
     ids.sort();
     String chatRoomId = ids.join('_');
 
-    Navigator.pop(context); // Close the modal before navigating
+    Navigator.pop(context);
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -27,14 +29,37 @@ class UserDetailsPopup extends StatelessWidget {
     );
   }
 
+  String? _convertGDriveLink(String? url) {
+    if (url == null || url.isEmpty) return null;
+
+    if (url.contains('drive.google.com/uc?export=view')) {
+      return url;
+    }
+
+    final patterns = [
+      RegExp(r'/file/d/([a-zA-Z0-9_-]+)'),
+      RegExp(r'[?&]id=([a-zA-Z0-9_-]+)'),
+    ];
+
+    for (final pattern in patterns) {
+      final match = pattern.firstMatch(url);
+      if (match != null && match.group(1) != null) {
+        return 'https://drive.google.com/uc?export=view&id=${match.group(1)}';
+      }
+    }
+    return url;
+  }
+
   @override
   Widget build(BuildContext context) {
     final String name = userData['name'] ?? 'No Name';
     final String email = userData['email'] ?? 'No Email';
     final String dept = userData['dept'] ?? 'N/A';
     final String customId = userData['customId'] ?? 'N/A';
-    final String? photoUrl = userData['photoUrl'];
-    final String phoneNumber = userData['phoneNumber'] ?? '';
+
+    final String uid = userData['uid'] ?? userData['id'];
+    final String? photoUrl = _convertGDriveLink(userData['photoUrl']);
+    final String phoneNumber = userData['phone'] ?? '';
 
     return Container(
       constraints: BoxConstraints(
@@ -47,7 +72,6 @@ class UserDetailsPopup extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Drag Handle
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12.0),
             child: Container(
@@ -59,49 +83,52 @@ class UserDetailsPopup extends StatelessWidget {
               ),
             ),
           ),
-          // Image
+
+          // ✅ Image box fixed
           Expanded(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                child: photoUrl != null
-                    ? Image.network(
-                        photoUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        loadingBuilder: (context, child, loadingProgress) =>
-                            loadingProgress == null
-                            ? child
-                            : const Center(child: CircularProgressIndicator()),
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.person,
-                              size: 100,
-                              color: Colors.white54,
-                            ),
-                      )
-                    : Container(
-                        color: Colors.black.withOpacity(0.5),
-                        child: const Center(
-                          child: Icon(
-                            Icons.person,
-                            size: 100,
-                            color: Colors.white54,
-                          ),
-                        ),
-                      ),
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                  ),
+                  child: photoUrl != null && photoUrl.isNotEmpty
+                      ? Image.network(
+                          photoUrl,
+                          fit: BoxFit.cover, // ✅ fit image properly
+                          width: double.infinity,
+                          height: double.infinity,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                    : null,
+                                color: Colors.white,
+                              ),
+                            );
+                          },
+                          errorBuilder: (_, __, ___) {
+                            return _imageFallback(name);
+                          },
+                        )
+                      : _imageFallback(name),
+                ),
               ),
             ),
           ),
-          // --- MODIFICATION: Redesigned Content Section ---
+
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start, // Left-align the content
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // --- Primary Info ---
                 Text(
                   name,
                   style: GoogleFonts.inter(
@@ -111,51 +138,36 @@ class UserDetailsPopup extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
+
                 StreamBuilder<DocumentSnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('users')
-                      .doc(userData['id'])
+                      .doc(uid)
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) return const SizedBox(height: 24);
                     final bool isOnline =
                         (snapshot.data!.data()
-                            as Map<String, dynamic>)['isOnline'] ??
+                            as Map<String, dynamic>?)?['online'] ??
                         false;
                     return _buildStatusIndicator(isOnline);
                   },
                 ),
 
-                // --- Divider ---
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Divider(
-                    color: Colors.white.withOpacity(0.2),
-                    height: 1,
-                  ),
-                ),
+                Divider(color: Colors.white.withOpacity(0.2), height: 30),
 
-                // --- Detail Rows with Icons ---
                 _buildDetailRow(Icons.email_outlined, email),
                 if (phoneNumber.isNotEmpty) ...[
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   _buildDetailRow(Icons.phone_outlined, phoneNumber),
                 ],
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _buildDetailRow(Icons.business_center_outlined, dept),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _buildDetailRow(Icons.badge_outlined, "ID: $customId"),
 
-                // --- Divider ---
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24.0),
-                  child: Divider(
-                    color: Colors.white.withOpacity(0.2),
-                    height: 1,
-                  ),
-                ),
+                Divider(color: Colors.white.withOpacity(0.2), height: 30),
 
-                // --- Chat Button ---
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -181,7 +193,26 @@ class UserDetailsPopup extends StatelessWidget {
     );
   }
 
-  // Helper for the Online/Offline status indicator
+  Widget _imageFallback(String name) {
+    return Container(
+      color: Colors.black.withOpacity(0.5),
+      child: Center(
+        child: CircleAvatar(
+          radius: 60,
+          backgroundColor: Colors.white.withOpacity(0.2),
+          child: Text(
+            name.isNotEmpty ? name[0].toUpperCase() : '?',
+            style: GoogleFonts.inter(
+              fontSize: 48,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStatusIndicator(bool isOnline) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -213,7 +244,6 @@ class UserDetailsPopup extends StatelessWidget {
     );
   }
 
-  // Helper for creating consistent detail rows with icons
   Widget _buildDetailRow(IconData icon, String text) {
     return Row(
       children: [

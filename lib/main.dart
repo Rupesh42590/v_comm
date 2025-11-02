@@ -24,16 +24,22 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // MODIFICATION: Changed ThemeData() to ThemeData.dark()
         brightness: Brightness.dark,
         primaryColor: Colors.grey[900],
-        // This is the key part: customize the color scheme
         colorScheme: const ColorScheme.dark(
           primary: Colors.white,
-          // Set the glow color here. Using transparent removes it.
-          // You could also use something like Colors.grey.
-          secondary: Colors.transparent,
+          secondary: Colors.transparent, // For the overscroll glow
         ),
+
+        // MODIFICATION: Add this AppBarTheme to control all AppBars
+        appBarTheme: const AppBarTheme(
+          // This ensures the AppBar background is consistent
+          backgroundColor: Color(0xFF1A1A1A),
+          // This is the key property to prevent the color change on scroll
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
+
         textSelectionTheme: TextSelectionThemeData(
           cursorColor: Colors.blueAccent,
           selectionColor: Colors.blueAccent.withOpacity(0.4),
@@ -41,7 +47,7 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color.fromARGB(255, 0, 0, 0),
       ),
-      home: const AuthGate(), // MODIFICATION: Removed the extra Scaffold
+      home: const AuthGate(),
     );
   }
 }
