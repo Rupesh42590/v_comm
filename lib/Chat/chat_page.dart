@@ -12,145 +12,146 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 // Common Emojis
 const List<String> kCommonEmojis = [
-  'ðŸ˜€',
-  'ðŸ˜ƒ',
-  'ðŸ˜„',
-  'ðŸ˜ ',
-  'ðŸ˜†',
-  'ðŸ˜…',
-  'ðŸ¤£',
-  'ðŸ˜‚',
-  'ðŸ™‚',
-  'ðŸ™ƒ',
-  'ðŸ˜‰',
-  'ðŸ˜Š',
-  'ðŸ˜‡',
-  'ðŸ¥°',
-  'ðŸ˜ ',
-  'ðŸ¤©',
-  'ðŸ˜˜',
-  'ðŸ˜—',
-  'ðŸ˜š',
-  'ðŸ˜™',
-  'ðŸ˜‹',
-  'ðŸ˜›',
-  'ðŸ˜œ',
-  'ðŸ¤ª',
-  'ðŸ˜ ',
-  'ðŸ¤‘',
-  'ðŸ¤—',
-  'ðŸ¤­',
-  'ðŸ¤«',
-  'ðŸ¤”',
-  'ðŸ¤ ',
-  'ðŸ¤¨',
-  'ðŸ˜ ',
-  'ðŸ˜‘',
-  'ðŸ˜¶',
-  'ðŸ˜ ',
-  'ðŸ˜’',
-  'ðŸ™„',
-  'ðŸ˜¬',
-  'ðŸ¤¥',
-  'ðŸ˜Œ',
-  'ðŸ˜”',
-  'ðŸ˜ª',
-  'ðŸ¤¤',
-  'ðŸ˜´',
-  'ðŸ˜·',
-  'ðŸ¤’',
-  'ðŸ¤•',
-  'ðŸ¤¢',
-  'ðŸ¤®',
-  'ðŸ¤§',
-  'ðŸ¥µ',
-  'ðŸ¥¶',
-  'ðŸ¥´',
-  'ðŸ˜µ',
-  'ðŸ¤¯',
-  'ðŸ¤ ',
-  'ðŸ¥³',
-  'ðŸ˜Ž',
-  'ðŸ¤“',
-  'ðŸ§ ',
-  'ðŸ˜•',
-  'ðŸ˜Ÿ',
-  'ðŸ™ ',
-  'â˜¹ï¸ ',
-  'ðŸ˜®',
-  'ðŸ˜¯',
-  'ðŸ˜²',
-  'ðŸ˜³',
-  'ðŸ¥º',
-  'ðŸ˜¦',
-  'ðŸ˜§',
-  'ðŸ˜¨',
-  'ðŸ˜°',
-  'ðŸ˜¥',
-  'ðŸ˜¢',
-  'ðŸ˜­',
-  'ðŸ˜±',
-  'ðŸ˜–',
-  'ðŸ˜£',
-  'ðŸ˜ž',
-  'ðŸ˜“',
-  'ðŸ˜©',
-  'ðŸ˜«',
-  'ðŸ¥±',
-  'ðŸ˜¤',
-  'ðŸ˜¡',
-  'ðŸ˜ ',
-  'ðŸ‘ ',
-  'ðŸ‘Ž',
-  'ðŸ‘Œ',
-  'âœŒï¸ ',
-  'ðŸ¤ž',
-  'ðŸ¤Ÿ',
-  'ðŸ¤˜',
-  'ðŸ¤™',
-  'ðŸ‘ˆ',
-  'ðŸ‘‰',
-  'ðŸ‘†',
-  'ðŸ‘‡',
-  'â˜ ï¸ ',
-  'âœ‹',
-  'ðŸ¤š',
-  'ðŸ– ',
-  'â ¤ï¸ ',
-  'ðŸ§¡',
-  'ðŸ’›',
-  'ðŸ’š',
-  'ðŸ’™',
-  'ðŸ’œ',
-  'ðŸ–¤',
-  'ðŸ¤ ',
-  'ðŸ’”',
-  'â £ï¸ ',
-  'ðŸ’•',
-  'ðŸ’ž',
-  'ðŸ’“',
-  'ðŸ’—',
-  'ðŸ’–',
-  'ðŸ”¥',
-  'ðŸ’˜',
-  'ðŸ’ ',
-  'ðŸ’Ÿ',
-  'ðŸŽ‰',
-  'ðŸŽŠ',
-  'ðŸŽˆ',
-  'ðŸŽ ',
-  'ðŸ †',
-  'â­ ',
-  'ðŸŒŸ',
-  'âœ¨',
-  'ðŸ’«',
-  'ðŸŒˆ',
-  'â˜€ï¸ ',
-  'ðŸŒ™',
-  'âš¡',
+  '😀',
+  '😃',
+  '😄',
+  '😁',
+  '😆',
+  '😅',
+  '😂',
+  '🤣',
+  '🙂',
+  '🙃',
+  '😉',
+  '😊',
+  '😇',
+  '🥰',
+  '😍',
+  '🤩',
+  '😘',
+  '😗',
+  '😚',
+  '😙',
+  '😋',
+  '😛',
+  '😜',
+  '🤪',
+  '🤨',
+  '🧐',
+  '🤓',
+  '😎',
+  '🥸',
+  '🥳',
+  '🤠',
+  '🤡',
+  '😏',
+  '😒',
+  '😞',
+  '😔',
+  '😟',
+  '😕',
+  '🙁',
+  '☹️',
+  '😣',
+  '😖',
+  '😫',
+  '😩',
+  '🥺',
+  '😢',
+  '😭',
+  '😤',
+  '😠',
+  '😡',
+  '🤬',
+  '🤯',
+  '😳',
+  '🥵',
+  '🥶',
+  '😱',
+  '😨',
+  '😰',
+  '😥',
+  '😓',
+  '🤗',
+  '🤔',
+  '🤭',
+  '🤫',
+  '🤥',
+  '😶',
+  '😐',
+  '😑',
+  '😬',
+  '🙄',
+  '😯',
+  '😦',
+  '😧',
+  '😮',
+  '😲',
+  '🥱',
+  '😴',
+  '🤤',
+  '😪',
+  '😵',
+  '🤐',
+  '🥴',
+  '🤢',
+  '🤮',
+  '🤧',
+  '😷',
+  '🤒',
+  '🤕',
+  '🤑',
+  '🤠',
+  '😈',
+  '👿',
+  '👹',
+  '👺',
+  '🤡',
+  '💩',
+  '👍',
+  '👎',
+  '👌',
+  '✌️',
+  '🤞',
+  '🤟',
+  '🤘',
+  '🤙',
+  '👈',
+  '👉',
+  '👆',
+  '👇',
+  '☝️',
+  '✊',
+  '🤛',
+  '🤜',
+  '❤️',
+  '🧡',
+  '💛',
+  '💚',
+  '💙',
+  '💜',
+  '🖤',
+  '🤍',
+  '💔',
+  '❣️',
+  '💕',
+  '💞',
+  '💓',
+  '💗',
+  '💖',
+  '🔥',
+  '💯',
+  '✨',
+  '🌟',
+  '💫',
+  '💥',
+  '🌈',
+  '☀️',
+  '🌙',
+  '⚡️',
 ];
 
-// Message Model
+// Message Model - UPDATED with sender name for groups
 class Message {
   final String id;
   final String text;
@@ -169,6 +170,9 @@ class Message {
   final bool isForwarded;
   final String? forwardedFrom;
   final String? senderId;
+  final String? forwardedBy;
+  final String? forwardedByName;
+  final String? senderName; // NEW: For displaying sender name in groups
 
   Message({
     required this.id,
@@ -188,6 +192,9 @@ class Message {
     this.isForwarded = false,
     this.forwardedFrom,
     this.senderId,
+    this.forwardedBy,
+    this.forwardedByName,
+    this.senderName,
   });
 
   factory Message.fromMap(
@@ -224,6 +231,9 @@ class Message {
       isForwarded: data['isForwarded'] == true,
       forwardedFrom: data['forwardedFrom']?.toString(),
       senderId: data['senderId']?.toString(),
+      forwardedBy: data['forwardedBy']?.toString(),
+      forwardedByName: data['forwardedByName']?.toString(),
+      senderName: data['senderName']?.toString(), // NEW
     );
   }
 }
@@ -299,6 +309,7 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  // UPDATED: Now includes sender name for groups
   Future<void> _sendMessage({String? imageUrl}) async {
     if (currentUser == null) return;
 
@@ -317,6 +328,16 @@ class _ChatPageState extends State<ChatPage> {
       }
     });
 
+    // Get sender name for group messages
+    String? senderName;
+    if (widget.isGroup) {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser!.uid)
+          .get();
+      senderName = userDoc.data()?['name'] ?? 'Unknown';
+    }
+
     final messageData = {
       'text': text,
       'senderId': currentUser!.uid,
@@ -327,6 +348,7 @@ class _ChatPageState extends State<ChatPage> {
       'isEdited': false,
       'reactions': [],
       'isForwarded': false,
+      if (widget.isGroup && senderName != null) 'senderName': senderName, // NEW
       if (imageUrl != null) 'imageUrl': imageUrl,
       if (_replyingTo != null) ...{
         'replyToId': _replyingTo!.id,
@@ -335,32 +357,27 @@ class _ChatPageState extends State<ChatPage> {
     };
 
     try {
-      // 1. Add the new message to the 'messages' subcollection.
       await chatRef.collection('messages').add(messageData);
 
-      // 2. Get the list of participants to update their unread counts.
       final chatDoc = await chatRef.get();
-      if (!chatDoc.exists) return; // Should not happen if page is open
+      if (!chatDoc.exists) return;
       final participants = List<String>.from(
         chatDoc.data()?['participants'] ?? [],
       );
 
-      // 3. Prepare the update for the main chat document.
-      String lastMsg = text.isNotEmpty ? text : 'ðŸ“· Photo';
+      String lastMsg = text.isNotEmpty ? text : '📷 Photo';
       final Map<String, dynamic> updateData = {
         'lastMessage': lastMsg,
         'lastMessageTimestamp': FieldValue.serverTimestamp(),
         'lastMessageSenderId': currentUser!.uid,
       };
 
-      // 4. Atomically increment the unread count for every participant EXCEPT the sender.
       for (final participantId in participants) {
         if (participantId != currentUser!.uid) {
           updateData['unreadCount.$participantId'] = FieldValue.increment(1);
         }
       }
 
-      // 5. Perform a single update operation.
       await chatRef.update(updateData);
     } catch (e) {
       if (mounted) {
@@ -702,6 +719,12 @@ class _ChatPageState extends State<ChatPage> {
     if (currentUser == null) return;
 
     try {
+      final currentUserDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser!.uid)
+          .get();
+      final currentUserName = currentUserDoc.data()?['name'] ?? 'Someone';
+
       String chatRoomId;
 
       if (isGroup) {
@@ -761,6 +784,11 @@ class _ChatPageState extends State<ChatPage> {
           'forwardedFrom':
               widget.otherUser['name'] ??
               (widget.isGroup ? widget.otherUser['groupName'] : 'Someone'),
+          'forwardedBy': currentUser!.uid,
+          'forwardedByName': currentUserName,
+          if (isGroup)
+            'senderName':
+                currentUserName, // NEW: Add sender name for group forwards
           if (data['imageUrl'] != null) 'imageUrl': data['imageUrl'],
         };
 
@@ -771,7 +799,7 @@ class _ChatPageState extends State<ChatPage> {
             .add(forwardedMessageData);
 
         if (lastMessageText.isEmpty) {
-          lastMessageText = (data['text'] as String?) ?? 'ðŸ“· Media';
+          lastMessageText = (data['text'] as String?) ?? '📷 Media';
         }
       }
 
@@ -840,16 +868,7 @@ class _ChatPageState extends State<ChatPage> {
   void _showReactionPicker(Message message) {
     if (!mounted) return;
 
-    const quickReactions = [
-      'â ¤ï¸ ',
-      'ðŸ‘ ',
-      'ðŸ˜‚',
-      'ðŸ˜®',
-      'ðŸ˜¢',
-      'ðŸ™ ',
-      'ðŸ”¥',
-      'ðŸ‘ ',
-    ];
+    const quickReactions = ['❤️', '👍', '😂', '😮', '😢', '🙏', '🔥', '👏'];
 
     showModalBottomSheet(
       context: context,
@@ -1681,7 +1700,7 @@ class _ChatPageState extends State<ChatPage> {
           style: GoogleFonts.inter(color: Colors.white),
         ),
         content: Text(
-          'Delete all messages? This cannot be undone.',
+          'Delete chat history on your device only? The other person will still have the chat.',
           style: GoogleFonts.inter(color: Colors.white70),
         ),
         actions: [
@@ -1695,6 +1714,8 @@ class _ChatPageState extends State<ChatPage> {
           TextButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
+              if (currentUser == null) return;
+
               try {
                 final messages = await FirebaseFirestore.instance
                     .collection('chats')
@@ -1702,9 +1723,22 @@ class _ChatPageState extends State<ChatPage> {
                     .collection('messages')
                     .get();
 
+                final batch = FirebaseFirestore.instance.batch();
+
                 for (var doc in messages.docs) {
-                  await doc.reference.delete();
+                  batch.update(doc.reference, {
+                    'deletedFor': FieldValue.arrayUnion([currentUser!.uid]),
+                  });
                 }
+
+                await batch.commit();
+
+                await FirebaseFirestore.instance
+                    .collection('chats')
+                    .doc(widget.chatRoomId)
+                    .update({
+                      'deletedFor': FieldValue.arrayUnion([currentUser!.uid]),
+                    });
 
                 if (mounted) {
                   _showSnackBar('Chat deleted successfully');
@@ -1945,7 +1979,7 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Say hello! ðŸ‘‹',
+                  'Say hello! 👋',
                   style: GoogleFonts.inter(color: Colors.white54, fontSize: 18),
                 ),
               ],
@@ -1954,6 +1988,15 @@ class _ChatPageState extends State<ChatPage> {
         }
 
         var messages = snapshot.data!.docs;
+
+        messages = messages.where((doc) {
+          final data = doc.data() as Map<String, dynamic>?;
+          final deletedFor = data?['deletedFor'];
+          if (deletedFor != null && deletedFor is List) {
+            return !deletedFor.contains(currentUser!.uid);
+          }
+          return true;
+        }).toList();
 
         if (_searchQuery.isNotEmpty) {
           messages = messages.where((doc) {
@@ -2016,9 +2059,11 @@ class _ChatPageState extends State<ChatPage> {
                 else if (showDateSeparator)
                   _DateSeparator(date: message.timestamp),
 
+                // UPDATED: Pass isGroup flag to MessageBubble
                 _MessageBubble(
                   key: ValueKey(message.id),
                   message: message,
+                  isGroup: widget.isGroup, // NEW
                   onLongPress: () {
                     if (_isSelectionMode) {
                       _toggleMessageSelection(message.id);
@@ -2285,9 +2330,10 @@ class _ChatPageState extends State<ChatPage> {
   }
 }
 
-// MESSAGE BUBBLE
+// MESSAGE BUBBLE - UPDATED to show sender name in groups
 class _MessageBubble extends StatelessWidget {
   final Message message;
+  final bool isGroup; // NEW
   final VoidCallback onLongPress;
   final VoidCallback onTap;
   final bool isSelected;
@@ -2296,6 +2342,7 @@ class _MessageBubble extends StatelessWidget {
   const _MessageBubble({
     super.key,
     required this.message,
+    required this.isGroup, // NEW
     required this.onLongPress,
     required this.onTap,
     this.isSelected = false,
@@ -2443,6 +2490,19 @@ class _MessageBubble extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        // NEW: Show sender name in group chats
+                        if (isGroup && !isMe && message.senderName != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              message.senderName!,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: const Color(0xFF64B5F6),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         if (message.isForwarded)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 6),
@@ -2456,7 +2516,9 @@ class _MessageBubble extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'Forwarded',
+                                  message.forwardedByName != null
+                                      ? 'Forwarded by ${message.forwardedByName}'
+                                      : 'Forwarded',
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     color: Colors.white.withOpacity(0.7),
@@ -2572,7 +2634,7 @@ class _MessageBubble extends StatelessWidget {
                           children: [
                             if (message.isEdited) ...[
                               Text(
-                                'Edited â€¢ ',
+                                'Edited • ',
                                 style: GoogleFonts.inter(
                                   fontSize: 10,
                                   color: Colors.white.withOpacity(0.5),
@@ -2580,7 +2642,6 @@ class _MessageBubble extends StatelessWidget {
                                 ),
                               ),
                             ],
-                            // MODIFIED: This now always shows the time, never "now".
                             Text(
                               DateFormat('h:mm a').format(message.timestamp),
                               style: GoogleFonts.inter(
@@ -2858,7 +2919,7 @@ class StarredMessagesPage extends StatelessWidget {
                     message.text.isNotEmpty
                         ? message.text
                         : message.imageUrl != null
-                        ? 'ðŸ“· Photo'
+                        ? '📷 Photo'
                         : 'Message',
                     style: GoogleFonts.inter(color: Colors.white),
                     maxLines: 2,
@@ -2999,7 +3060,7 @@ class PinnedMessagesPage extends StatelessWidget {
                     message.text.isNotEmpty
                         ? message.text
                         : message.imageUrl != null
-                        ? 'ðŸ“· Photo'
+                        ? '📷 Photo'
                         : 'Message',
                     style: GoogleFonts.inter(color: Colors.white),
                     maxLines: 2,
@@ -3027,7 +3088,7 @@ class PinnedMessagesPage extends StatelessWidget {
   }
 }
 
-// CONTACT INFO PAGE - WITH EDITABLE ABOUT
+// CONTACT INFO PAGE - EDIT ABOUT FOR BOTH PERSONAL AND GROUP
 class ContactInfoPage extends StatefulWidget {
   final Map<String, dynamic> user;
   final bool isGroup;
@@ -3056,6 +3117,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     super.dispose();
   }
 
+  // Edit group description
   Future<void> _editGroupAbout(String currentAbout) async {
     final TextEditingController aboutController = TextEditingController(
       text: currentAbout,
@@ -3139,6 +3201,261 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     );
   }
 
+  // Edit personal about
+  Future<void> _editPersonalAbout(String currentAbout) async {
+    final TextEditingController aboutController = TextEditingController(
+      text: currentAbout,
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        title: Text(
+          'Edit About',
+          style: GoogleFonts.inter(color: Colors.white),
+        ),
+        content: TextField(
+          controller: aboutController,
+          style: GoogleFonts.inter(color: Colors.white),
+          maxLines: 3,
+          maxLength: 200,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: 'Enter your status',
+            hintStyle: GoogleFonts.inter(color: Colors.white54),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+            ),
+            focusedBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF1565C0)),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: Colors.white70),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              final newAbout = aboutController.text.trim();
+              if (newAbout.isNotEmpty && newAbout != currentAbout) {
+                try {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(widget.currentUserId)
+                      .update({'about': newAbout});
+
+                  if (mounted) {
+                    Navigator.pop(dialogContext);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('About updated successfully'),
+                        backgroundColor: Colors.green,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to update: $e'),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                }
+              } else {
+                Navigator.pop(dialogContext);
+              }
+            },
+            child: Text(
+              'Save',
+              style: GoogleFonts.inter(color: const Color(0xFF1565C0)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // NEW: Add member function restored
+  Future<void> _showAddMemberDialog(List<String> currentMembers) async {
+    try {
+      final usersSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where(FieldPath.documentId, isNotEqualTo: widget.currentUserId)
+          .get();
+
+      final availableUsers = usersSnapshot.docs
+          .where((doc) => !currentMembers.contains(doc.id))
+          .toList();
+
+      if (!mounted) return;
+
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: const Color(0xFF1A1A1A),
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (modalContext) => StatefulBuilder(
+          builder: (context, setModalState) => DraggableScrollableSheet(
+            initialChildSize: 0.75,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            expand: false,
+            builder: (context, scrollController) => Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Add Members',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(color: Colors.white24, height: 1),
+                Expanded(
+                  child: availableUsers.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.people_outline,
+                                size: 64,
+                                color: Colors.white.withOpacity(0.3),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No users to add',
+                                style: GoogleFonts.inter(color: Colors.white54),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          controller: scrollController,
+                          itemCount: availableUsers.length,
+                          itemBuilder: (context, index) {
+                            final userDoc = availableUsers[index];
+                            final userData = userDoc.data();
+                            final userName = userData['name'] ?? 'Unknown';
+                            final userEmail = userData['email'] ?? '';
+
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.grey.shade700,
+                                backgroundImage: userData['photoUrl'] != null
+                                    ? NetworkImage(userData['photoUrl'])
+                                    : null,
+                                child: userData['photoUrl'] == null
+                                    ? const Icon(
+                                        Icons.person,
+                                        color: Colors.white,
+                                        size: 20,
+                                      )
+                                    : null,
+                              ),
+                              title: Text(
+                                userName,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              subtitle: Text(
+                                userEmail,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white54,
+                                  fontSize: 12,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              onTap: () async {
+                                Navigator.pop(modalContext);
+                                await _addMemberToGroup(userDoc.id, userData);
+                              },
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading users: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // NEW: Add member to group function
+  Future<void> _addMemberToGroup(
+    String userId,
+    Map<String, dynamic> userData,
+  ) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('chats')
+          .doc(widget.chatRoomId)
+          .update({
+            'participants': FieldValue.arrayUnion([userId]),
+          });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${userData['name'] ?? 'User'} added to group'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add member: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -3194,7 +3511,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
             const SizedBox(height: 40),
             const Divider(color: Colors.white24),
 
-            // About section with edit functionality for groups
+            // About section - EDIT FOR BOTH GROUPS AND PERSONAL
             if (widget.isGroup)
               StreamBuilder<DocumentSnapshot>(
                 stream: FirebaseFirestore.instance
@@ -3256,23 +3573,65 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
                 },
               )
             else
-              ListTile(
-                leading: const Icon(
-                  Icons.info_outline,
-                  color: Colors.white70,
-                  size: 22,
-                ),
-                title: Text(
-                  'About',
-                  style: GoogleFonts.inter(color: Colors.white),
-                ),
-                subtitle: Text(
-                  widget.user['about']?.toString() ??
-                      'Hey there! I am using this app.',
-                  style: GoogleFonts.inter(color: Colors.white54),
-                ),
-              ),
+              // Personal chat - Edit own about
+              // Personal chat - Edit own about
+              StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(widget.currentUserId)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return ListTile(
+                      leading: const Icon(
+                        Icons.info_outline,
+                        color: Colors.white70,
+                        size: 22,
+                      ),
+                      title: Text(
+                        'About',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        'Loading...',
+                        style: GoogleFonts.inter(color: Colors.white54),
+                      ),
+                    );
+                  }
 
+                  final currentUserData =
+                      snapshot.data!.data() as Map<String, dynamic>?;
+                  final currentUserAbout =
+                      currentUserData?['about'] ??
+                      'Hey there! I am using this app.';
+
+                  return ListTile(
+                    leading: const Icon(
+                      Icons.info_outline,
+                      color: Colors.white70,
+                      size: 22,
+                    ),
+                    title: Text(
+                      'About',
+                      style: GoogleFonts.inter(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      widget.user['about']?.toString() ??
+                          'Hey there! I am using this app.',
+                      style: GoogleFonts.inter(color: Colors.white54),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(
+                        Icons.edit,
+                        color: Colors.white70,
+                        size: 20,
+                      ),
+                      onPressed: () => _editPersonalAbout(currentUserAbout),
+                      splashRadius: 24,
+                    ),
+                  ); // <- This closing parenthesis was missing
+                },
+              ),
             if (!widget.isGroup) ...[
               const Divider(color: Colors.white24),
               ListTile(
@@ -3333,11 +3692,6 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
                   final createdAt = data['createdAt'] as Timestamp?;
                   final isAdmin = createdBy == widget.currentUserId;
 
-                  // FIXED: Exclude current user from member count
-                  final otherMembersCount = participants
-                      .where((id) => id != widget.currentUserId)
-                      .length;
-
                   return Column(
                     children: [
                       if (createdBy.isNotEmpty)
@@ -3369,7 +3723,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
                                 size: 22,
                               ),
                               title: Text(
-                                'Created by',
+                                'Created By',
                                 style: GoogleFonts.inter(color: Colors.white),
                               ),
                               subtitle: Text(
@@ -3387,55 +3741,477 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
                             size: 22,
                           ),
                           title: Text(
-                            'Created on',
+                            'Created On',
                             style: GoogleFonts.inter(color: Colors.white),
                           ),
                           subtitle: Text(
-                            DateFormat(
-                              'MMM d, yyyy',
-                            ).format(createdAt.toDate()),
+                            DateFormat('MMMM d, y').format(createdAt.toDate()),
                             style: GoogleFonts.inter(color: Colors.white54),
                           ),
                         ),
-                      ListTile(
-                        leading: const Icon(
-                          Icons.group,
-                          color: Colors.white70,
-                          size: 22,
+                      const Divider(color: Colors.white24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
                         ),
-                        title: Text(
-                          'Group Members ($otherMembersCount)',
-                          style: GoogleFonts.inter(color: Colors.white),
-                        ),
-                        trailing: isAdmin
-                            ? IconButton(
-                                icon: const Icon(
-                                  Icons.person_add,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Members (${participants.length})',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (participants.length > 5)
+                              IconButton(
+                                icon: Icon(
+                                  _searchQuery.isEmpty
+                                      ? Icons.search
+                                      : Icons.close,
                                   color: Colors.white70,
                                   size: 22,
                                 ),
-                                onPressed: () =>
-                                    _showAddMemberDialog(participants),
+                                onPressed: () {
+                                  setState(() {
+                                    if (_searchQuery.isEmpty) {
+                                      _searchQuery = ' ';
+                                    } else {
+                                      _searchQuery = '';
+                                      _searchController.clear();
+                                    }
+                                  });
+                                },
                                 splashRadius: 24,
-                              )
-                            : null,
-                        onTap: () => _showMembersList(participants),
+                              ),
+                          ],
+                        ),
+                      ),
+                      if (_searchQuery.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: TextField(
+                            controller: _searchController,
+                            style: GoogleFonts.inter(color: Colors.white),
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              hintText: 'Search members...',
+                              hintStyle: GoogleFonts.inter(
+                                color: Colors.white54,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: Colors.white70,
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFF2A2A2A),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                            ),
+                            onChanged: (value) {
+                              setState(
+                                () => _searchQuery = value.toLowerCase(),
+                              );
+                            },
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: participants.length,
+                        itemBuilder: (context, index) {
+                          final participantId = participants[index];
+                          final isCurrentUser =
+                              participantId == widget.currentUserId;
+
+                          return FutureBuilder<DocumentSnapshot>(
+                            future: FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(participantId)
+                                .get(),
+                            builder: (context, userSnapshot) {
+                              if (userSnapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: Colors.grey.shade700,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white54,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    'Loading...',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white54,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              if (!userSnapshot.hasData ||
+                                  !userSnapshot.data!.exists) {
+                                return const SizedBox.shrink();
+                              }
+
+                              final userData =
+                                  userSnapshot.data!.data()
+                                      as Map<String, dynamic>?;
+                              if (userData == null) {
+                                return const SizedBox.shrink();
+                              }
+
+                              final name = userData['name'] ?? 'Unknown';
+                              final email = userData['email'] ?? '';
+
+                              if (_searchQuery.isNotEmpty &&
+                                  _searchQuery.trim().isNotEmpty) {
+                                final query = _searchQuery.toLowerCase();
+                                if (!name.toLowerCase().contains(query) &&
+                                    !email.toLowerCase().contains(query)) {
+                                  return const SizedBox.shrink();
+                                }
+                              }
+
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Colors.grey.shade700,
+                                  backgroundImage: userData['photoUrl'] != null
+                                      ? NetworkImage(userData['photoUrl'])
+                                      : null,
+                                  child: userData['photoUrl'] == null
+                                      ? const Icon(
+                                          Icons.person,
+                                          color: Colors.white,
+                                          size: 20,
+                                        )
+                                      : null,
+                                ),
+                                title: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        isCurrentUser ? 'You' : name,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontWeight: isCurrentUser
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ),
+                                    if (participantId == createdBy)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(
+                                            0xFF1565C0,
+                                          ).withOpacity(0.2),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0xFF1565C0),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Admin',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 10,
+                                            color: const Color(0xFF1565C0),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                subtitle: Text(
+                                  email,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white54,
+                                    fontSize: 12,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                trailing: isAdmin && !isCurrentUser
+                                    ? PopupMenuButton<String>(
+                                        icon: const Icon(
+                                          Icons.more_vert,
+                                          color: Colors.white70,
+                                        ),
+                                        color: const Color(0xFF1A1A1A),
+                                        onSelected: (value) async {
+                                          if (value == 'remove') {
+                                            final confirm = await showDialog<bool>(
+                                              context: context,
+                                              builder: (dialogContext) =>
+                                                  AlertDialog(
+                                                    backgroundColor:
+                                                        const Color(0xFF1A1A1A),
+                                                    title: Text(
+                                                      'Remove Member?',
+                                                      style: GoogleFonts.inter(
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    content: Text(
+                                                      'Are you sure you want to remove $name from this group?',
+                                                      style: GoogleFonts.inter(
+                                                        color: Colors.white70,
+                                                      ),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                              dialogContext,
+                                                              false,
+                                                            ),
+                                                        child: Text(
+                                                          'Cancel',
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                                color: Colors
+                                                                    .white70,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                              dialogContext,
+                                                              true,
+                                                            ),
+                                                        child: Text(
+                                                          'Remove',
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                                color:
+                                                                    Colors.red,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                            );
+
+                                            if (confirm == true) {
+                                              try {
+                                                await FirebaseFirestore.instance
+                                                    .collection('chats')
+                                                    .doc(widget.chatRoomId)
+                                                    .update({
+                                                      'participants':
+                                                          FieldValue.arrayRemove(
+                                                            [participantId],
+                                                          ),
+                                                    });
+
+                                                if (mounted) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                        '$name removed from group',
+                                                      ),
+                                                      backgroundColor:
+                                                          Colors.green,
+                                                      duration: const Duration(
+                                                        seconds: 2,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                              } catch (e) {
+                                                if (mounted) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                        'Failed to remove member: $e',
+                                                      ),
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      duration: const Duration(
+                                                        seconds: 2,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        itemBuilder: (context) => [
+                                          PopupMenuItem(
+                                            value: 'remove',
+                                            child: Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.person_remove,
+                                                  color: Colors.red,
+                                                  size: 20,
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Text(
+                                                  'Remove from group',
+                                                  style: GoogleFonts.inter(
+                                                    color: Colors.red,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : null,
+                              );
+                            },
+                          );
+                        },
                       ),
                       if (isAdmin) ...[
-                        const Divider(color: Colors.white24),
-                        ListTile(
-                          leading: const Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                            size: 22,
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _showAddMemberDialog(participants);
+                            },
+                            icon: const Icon(Icons.person_add),
+                            label: Text(
+                              'Add Members',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1565C0),
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size(double.infinity, 48),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
                           ),
-                          title: Text(
-                            'Delete Group',
-                            style: GoogleFonts.inter(color: Colors.red),
-                          ),
-                          onTap: () => _showDeleteGroupDialog(),
                         ),
                       ],
+                      const SizedBox(height: 16),
+                      if (!isAdmin)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (dialogContext) => AlertDialog(
+                                  backgroundColor: const Color(0xFF1A1A1A),
+                                  title: Text(
+                                    'Leave Group?',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  content: Text(
+                                    'Are you sure you want to leave this group?',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(dialogContext, false),
+                                      child: Text(
+                                        'Cancel',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(dialogContext, true),
+                                      child: Text(
+                                        'Leave',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              if (confirm == true) {
+                                try {
+                                  await FirebaseFirestore.instance
+                                      .collection('chats')
+                                      .doc(widget.chatRoomId)
+                                      .update({
+                                        'participants': FieldValue.arrayRemove([
+                                          widget.currentUserId,
+                                        ]),
+                                      });
+
+                                  if (mounted) {
+                                    Navigator.pop(context);
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Left group successfully',
+                                        ),
+                                        backgroundColor: Colors.green,
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Failed to leave: $e'),
+                                        backgroundColor: Colors.red,
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                            icon: const Icon(Icons.exit_to_app),
+                            label: Text(
+                              'Leave Group',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade700,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size(double.infinity, 48),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 32),
                     ],
                   );
                 },
@@ -3445,420 +4221,5 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
         ),
       ),
     );
-  }
-
-  void _showMembersList(List<String> memberIds) {
-    if (memberIds.isEmpty) return;
-
-    // Filter out current user from the list
-    final otherMembers = memberIds
-        .where((id) => id != widget.currentUserId)
-        .toList();
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1A1A1A),
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (modalContext) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Group Members',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(color: Colors.white24, height: 1),
-            Expanded(
-              child: otherMembers.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No other members',
-                        style: GoogleFonts.inter(color: Colors.white54),
-                      ),
-                    )
-                  : ListView.builder(
-                      controller: scrollController,
-                      itemCount: otherMembers.length,
-                      itemBuilder: (context, index) {
-                        return FutureBuilder<DocumentSnapshot>(
-                          future: FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(otherMembers[index])
-                              .get(),
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData) {
-                              return ListTile(
-                                leading: const CircleAvatar(
-                                  backgroundColor: Colors.grey,
-                                  child: Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                                title: Text(
-                                  'Loading...',
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white54,
-                                  ),
-                                ),
-                              );
-                            }
-
-                            if (!snapshot.data!.exists) {
-                              return const SizedBox.shrink();
-                            }
-
-                            final userData =
-                                snapshot.data!.data() as Map<String, dynamic>?;
-                            if (userData == null)
-                              return const SizedBox.shrink();
-
-                            return ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.grey.shade700,
-                                backgroundImage: userData['photoUrl'] != null
-                                    ? NetworkImage(userData['photoUrl'])
-                                    : null,
-                                child: userData['photoUrl'] == null
-                                    ? const Icon(
-                                        Icons.person,
-                                        color: Colors.white,
-                                        size: 20,
-                                      )
-                                    : null,
-                              ),
-                              title: Text(
-                                userData['name'] ?? 'Unknown User',
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              subtitle: Text(
-                                userData['email'] ?? '',
-                                style: GoogleFonts.inter(
-                                  color: Colors.white54,
-                                  fontSize: 12,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showAddMemberDialog(List<String> currentMembers) async {
-    try {
-      final usersSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where(FieldPath.documentId, isNotEqualTo: widget.currentUserId)
-          .get();
-
-      final availableUsers = usersSnapshot.docs
-          .where((doc) => !currentMembers.contains(doc.id))
-          .toList();
-
-      if (!mounted) return;
-
-      showModalBottomSheet(
-        context: context,
-        backgroundColor: const Color(0xFF1A1A1A),
-        isScrollControlled: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        builder: (modalContext) => StatefulBuilder(
-          builder: (context, setModalState) => DraggableScrollableSheet(
-            initialChildSize: 0.75,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            expand: false,
-            builder: (context, scrollController) => Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Add Member',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: TextField(
-                    controller: _searchController,
-                    style: GoogleFonts.inter(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Search users...',
-                      hintStyle: GoogleFonts.inter(color: Colors.white54),
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: Colors.white70,
-                        size: 22,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFF2A2A2A),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
-                    ),
-                    onChanged: (value) {
-                      setModalState(() => _searchQuery = value.toLowerCase());
-                    },
-                  ),
-                ),
-                const Divider(color: Colors.white24),
-                Expanded(
-                  child: availableUsers.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.people_outline,
-                                size: 64,
-                                color: Colors.white.withOpacity(0.3),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No users to add',
-                                style: GoogleFonts.inter(color: Colors.white54),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.builder(
-                          controller: scrollController,
-                          itemCount: availableUsers.length,
-                          itemBuilder: (context, index) {
-                            final userDoc = availableUsers[index];
-                            final userData = userDoc.data();
-                            final userName = userData['name'] ?? 'Unknown';
-                            final userEmail = userData['email'] ?? '';
-
-                            if (_searchQuery.isNotEmpty &&
-                                !userName.toLowerCase().contains(
-                                  _searchQuery,
-                                ) &&
-                                !userEmail.toLowerCase().contains(
-                                  _searchQuery,
-                                )) {
-                              return const SizedBox.shrink();
-                            }
-
-                            return ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.grey.shade700,
-                                backgroundImage: userData['photoUrl'] != null
-                                    ? NetworkImage(userData['photoUrl'])
-                                    : null,
-                                child: userData['photoUrl'] == null
-                                    ? const Icon(
-                                        Icons.person,
-                                        color: Colors.white,
-                                        size: 20,
-                                      )
-                                    : null,
-                              ),
-                              title: Text(
-                                userName,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              subtitle: Text(
-                                userEmail,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white54,
-                                  fontSize: 12,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              onTap: () async {
-                                Navigator.pop(modalContext);
-                                await _addMemberToGroup(userDoc.id, userData);
-                              },
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading users: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _addMemberToGroup(
-    String userId,
-    Map<String, dynamic> userData,
-  ) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('chats')
-          .doc(widget.chatRoomId)
-          .update({
-            'participants': FieldValue.arrayUnion([userId]),
-          });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${userData['name'] ?? 'User'} added to group'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add member: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
-
-  void _showDeleteGroupDialog() {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: Text(
-          'Delete Group?',
-          style: GoogleFonts.inter(color: Colors.white),
-        ),
-        content: Text(
-          'This will permanently delete the group and all its messages for everyone. This action cannot be undone.',
-          style: GoogleFonts.inter(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(color: Colors.white70),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-              await _deleteGroup();
-            },
-            child: Text('Delete', style: GoogleFonts.inter(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _deleteGroup() async {
-    try {
-      final messages = await FirebaseFirestore.instance
-          .collection('chats')
-          .doc(widget.chatRoomId)
-          .collection('messages')
-          .get();
-
-      for (var doc in messages.docs) {
-        await doc.reference.delete();
-      }
-
-      await FirebaseFirestore.instance
-          .collection('chats')
-          .doc(widget.chatRoomId)
-          .delete();
-
-      if (mounted) {
-        Navigator.pop(context);
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Group deleted successfully'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to delete group: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    }
   }
 }
