@@ -66,8 +66,6 @@ class _ChatHomePageState extends State<ChatHomePage> {
     );
   }
 
-  // **FIXED METHOD**: This function now correctly clears the unread count
-  // for one-on-one chats when a user navigates to the chat page.
   void _navigateToChat(Map<String, dynamic> otherUser) {
     if (currentUser == null) return;
 
@@ -77,16 +75,14 @@ class _ChatHomePageState extends State<ChatHomePage> {
         .collection('chats')
         .doc(chatRoomId);
 
-    // Get the document to either create it or mark it as read.
     chatRef
         .get()
         .then((doc) {
           if (doc.exists) {
-            // If the chat already exists, update the unread count to 0.
-            // This will immediately remove the highlight and red dot.
+            // When a chat is opened, clear the unread count.
             chatRef.update({'unreadCount.${currentUser!.uid}': 0});
           } else {
-            // If the chat is new (from search), create it with unread count as 0.
+            // When creating a new chat, initialize all necessary fields.
             chatRef.set({
               'participants': [currentUser!.uid, otherUser['id']],
               'isGroup': false,
@@ -100,7 +96,6 @@ class _ChatHomePageState extends State<ChatHomePage> {
           }
         })
         .then((_) {
-          // After updating Firestore, navigate to the chat page.
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -111,7 +106,6 @@ class _ChatHomePageState extends State<ChatHomePage> {
               ),
             ),
           ).then((_) {
-            // This part just resets the search UI when you come back.
             if (_isSearching) {
               setState(() {
                 _isSearching = false;
@@ -122,15 +116,20 @@ class _ChatHomePageState extends State<ChatHomePage> {
         });
   }
 
-  Future<void> _archiveChat(String chatId, {bool unarchive = false}) async {
+  Future<void> _unarchiveChat(String chatId) async {
     if (currentUser == null) return;
     await FirebaseFirestore.instance.collection('chats').doc(chatId).update({
-      'archivedBy.${currentUser!.uid}': !unarchive,
+      'archivedBy.${currentUser!.uid}': false,
     });
+    if (mounted) _showSnackBar('Chat restored.');
+  }
 
-    if (mounted) {
-      _showSnackBar(unarchive ? 'Chat unarchived.' : 'Chat archived.');
-    }
+  Future<void> _archiveChat(String chatId) async {
+    if (currentUser == null) return;
+    await FirebaseFirestore.instance.collection('chats').doc(chatId).update({
+      'archivedBy.${currentUser!.uid}': true,
+    });
+    if (mounted) _showSnackBar('Chat archived.');
   }
 
   Future<bool> _confirmDeleteChat(
@@ -140,7 +139,10 @@ class _ChatHomePageState extends State<ChatHomePage> {
     String chatName,
   ) async {
     if (isGroup && createdBy != currentUser!.uid) {
-      _showSnackBar('Only group creator can delete', isError: true);
+      _showSnackBar(
+        'Only the group creator can delete the group.',
+        isError: true,
+      );
       return false;
     }
 
@@ -166,7 +168,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                isGroup ? 'Delete Group?' : 'Delete Chat?',
+                'Delete Group?',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -177,9 +179,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
           ],
         ),
         content: Text(
-          isGroup
-              ? 'This will permanently delete the group for all members.'
-              : 'Are you sure you want to permanently delete this conversation?',
+          'This will permanently delete the group for all members. This action cannot be undone.',
           style: GoogleFonts.inter(
             color: Colors.white.withOpacity(0.7),
             fontSize: 14,
@@ -231,7 +231,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
             .collection('chats')
             .doc(chatId)
             .delete();
-        if (mounted) _showSnackBar(isGroup ? 'Group deleted' : 'Chat deleted');
+        if (mounted) _showSnackBar('Group deleted');
         return true;
       } catch (e) {
         if (mounted) _showSnackBar('Error: $e', isError: true);
@@ -604,22 +604,19 @@ class _ChatHomePageState extends State<ChatHomePage> {
 
   Future<void> _createGroup(String groupName, List<String> memberIds) async {
     if (currentUser == null) return;
+    final allParticipantIds = [currentUser!.uid, ...memberIds];
     try {
       await FirebaseFirestore.instance.collection('chats').add({
         'groupName': groupName,
-        'participants': [currentUser!.uid, ...memberIds],
+        'participants': allParticipantIds,
         'isGroup': true,
         'createdBy': currentUser!.uid,
         'createdAt': FieldValue.serverTimestamp(),
         'lastMessage': 'Group created',
         'lastMessageTimestamp': FieldValue.serverTimestamp(),
         'lastMessageSenderId': currentUser!.uid,
-        'unreadCount': {
-          for (var id in [currentUser!.uid, ...memberIds]) id: 0,
-        },
-        'archivedBy': {
-          for (var id in [currentUser!.uid, ...memberIds]) id: false,
-        },
+        'unreadCount': {for (var id in allParticipantIds) id: 0},
+        'archivedBy': {for (var id in allParticipantIds) id: false},
       });
       if (mounted) _showSnackBar('Group "$groupName" created!');
     } catch (e) {
@@ -632,7 +629,6 @@ class _ChatHomePageState extends State<ChatHomePage> {
     String groupName,
     List<dynamic> participants,
   ) {
-    // Correctly clears the unread count before navigating for groups.
     FirebaseFirestore.instance.collection('chats').doc(groupId).update({
       'unreadCount.${currentUser!.uid}': 0,
     });
@@ -651,11 +647,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
         ),
       ),
     ).then((_) {
-      // Rebuild the state when returning, if necessary.
-      // The StreamBuilder often handles this automatically.
-      if (mounted) {
-        setState(() {});
-      }
+      if (mounted) setState(() {});
     });
   }
 
@@ -707,6 +699,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
 
         final filteredDocs = allDocs.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
+
           final isArchived =
               (data['archivedBy']
                   as Map<String, dynamic>?)?[currentUser!.uid] ??
@@ -736,9 +729,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
         final activeChats = filteredDocs.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
           final isGroup = data['isGroup'] ?? false;
-
           if (isGroup) return true;
-
           return data['lastMessage'] != 'Chat started';
         }).toList();
 
@@ -790,6 +781,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
             onUserTap: _navigateToChat,
             onGroupTap: _navigateToGroupChatPage,
             onConfirmDelete: _confirmDeleteChat,
+            onUnarchive: _unarchiveChat,
             onArchive: _archiveChat,
           ),
         );
@@ -906,11 +898,13 @@ class _ChatHomePageState extends State<ChatHomePage> {
           fontSize: 14,
         ),
         backgroundColor: const Color(0xFF2A2A2A),
-        selectedColor: Colors.white,
+        selectedColor: Colors.grey.shade300,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
+            color: isSelected
+                ? Colors.grey.shade300
+                : Colors.white.withOpacity(0.2),
             width: 1.5,
           ),
         ),
@@ -935,7 +929,9 @@ class _ChatHomePageState extends State<ChatHomePage> {
         shape: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.2))),
         leading: IconButton(
           icon: Icon(
-            _isSearching ? Icons.close : Icons.arrow_back_ios_new,
+            _isSearching || _filterType == 'archived'
+                ? Icons.close
+                : Icons.arrow_back_ios_new,
             color: Colors.white,
           ),
           onPressed: () {
@@ -943,6 +939,10 @@ class _ChatHomePageState extends State<ChatHomePage> {
               setState(() {
                 _isSearching = false;
                 _searchController.clear();
+              });
+            } else if (_filterType == 'archived') {
+              setState(() {
+                _filterType = 'all';
               });
             } else {
               Navigator.of(context).pop();
@@ -961,9 +961,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              setState(() => _isSearching = true);
-            },
+            onPressed: () => setState(() => _isSearching = true),
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -981,16 +979,28 @@ class _ChatHomePageState extends State<ChatHomePage> {
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'refresh',
-                child: Text(
-                  'Refresh',
-                  style: GoogleFonts.inter(color: Colors.white),
+                child: Row(
+                  children: [
+                    const Icon(Icons.refresh, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Refresh',
+                      style: GoogleFonts.inter(color: Colors.white),
+                    ),
+                  ],
                 ),
               ),
               PopupMenuItem(
                 value: 'archived',
-                child: Text(
-                  'Archived Chats',
-                  style: GoogleFonts.inter(color: Colors.white),
+                child: Row(
+                  children: [
+                    const Icon(Icons.archive_outlined, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Archived Chats',
+                      style: GoogleFonts.inter(color: Colors.white),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -1106,7 +1116,8 @@ class _ChatListItem extends StatelessWidget {
   final Function(Map<String, dynamic>) onUserTap;
   final Function(String, String, List<dynamic>) onGroupTap;
   final Future<bool> Function(String, bool, String?, String) onConfirmDelete;
-  final void Function(String, {bool unarchive}) onArchive;
+  final void Function(String) onUnarchive;
+  final void Function(String) onArchive;
 
   const _ChatListItem({
     required Key key,
@@ -1115,6 +1126,7 @@ class _ChatListItem extends StatelessWidget {
     required this.onUserTap,
     required this.onGroupTap,
     required this.onConfirmDelete,
+    required this.onUnarchive,
     required this.onArchive,
   }) : super(key: key);
 
@@ -1140,67 +1152,87 @@ class _ChatListItem extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return FutureBuilder<String>(
-      future: _getChatName(isGroup, chatData, otherUserId),
-      builder: (context, snapshot) {
-        final chatName = snapshot.data ?? (isGroup ? 'Group' : 'Chat');
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Dismissible(
-              key: key!,
-              background: Container(
-                decoration: BoxDecoration(
-                  color: isArchived ? Colors.blue : Colors.green,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.only(left: 20),
-                child: Icon(
-                  isArchived ? Icons.unarchive : Icons.archive,
-                  color: Colors.white,
-                ),
-              ),
-              secondaryBackground: Container(
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 20),
-                child: const Icon(Icons.delete, color: Colors.white),
-              ),
-              confirmDismiss: (direction) async {
-                if (direction == DismissDirection.endToStart) {
-                  final createdBy = chatData['createdBy'] as String?;
-                  return await onConfirmDelete(
-                    chatDoc.id,
-                    isGroup,
-                    createdBy,
-                    chatName,
-                  );
-                } else {
-                  return true;
-                }
-              },
-              onDismissed: (direction) {
-                if (direction == DismissDirection.startToEnd) {
-                  onArchive(chatDoc.id, unarchive: isArchived);
-                }
-              },
-              child: _buildContent(
-                context,
-                chatData,
-                isGroup,
-                otherUserId,
-                unreadCount,
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Dismissible(
+          key: key!,
+          background: Container(
+            decoration: BoxDecoration(
+              color: isArchived ? Colors.blue.shade700 : Colors.green.shade700,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.only(left: 20),
+            child: Icon(
+              isArchived ? Icons.unarchive_outlined : Icons.archive_outlined,
+              color: Colors.white,
             ),
           ),
-        );
-      },
+          // MODIFIED: Secondary background for left-swipe is now only for groups.
+          secondaryBackground: (!isArchived && isGroup)
+              ? Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade900,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  child: const Icon(
+                    Icons.delete_forever_outlined,
+                    color: Colors.white,
+                  ),
+                )
+              : Container(
+                  color: Colors.transparent,
+                ), // Disables for personal chats
+          // MODIFIED: This function decides whether a swipe is allowed to complete.
+          confirmDismiss: (direction) async {
+            // --- SWIPE LEFT (DELETE) ---
+            if (direction == DismissDirection.endToStart) {
+              // Only allow left-swiping for groups that are not archived.
+              if (isGroup && !isArchived) {
+                final chatName = chatData['groupName'] ?? 'this group';
+                final createdBy = chatData['createdBy'] as String?;
+                return await onConfirmDelete(
+                  chatDoc.id,
+                  isGroup,
+                  createdBy,
+                  chatName,
+                );
+              } else {
+                // Disallow left swipe for personal chats or any archived chats.
+                return false;
+              }
+            }
+            // --- SWIPE RIGHT (ARCHIVE/UNARCHIVE) ---
+            else if (direction == DismissDirection.startToEnd) {
+              return true;
+            }
+            return false;
+          },
+          // MODIFIED: This function is called after a swipe is successfully completed.
+          onDismissed: (direction) {
+            // The left-swipe action for groups is handled by `onConfirmDelete`.
+            // This now only needs to handle the right-swipe action.
+            if (direction == DismissDirection.startToEnd) {
+              if (isArchived) {
+                onUnarchive(chatDoc.id);
+              } else {
+                onArchive(chatDoc.id);
+              }
+            }
+          },
+          child: _buildContent(
+            context,
+            chatData,
+            isGroup,
+            otherUserId,
+            unreadCount,
+          ),
+        ),
+      ),
     );
   }
 
@@ -1211,9 +1243,7 @@ class _ChatListItem extends StatelessWidget {
     String otherUserId,
     int unreadCount,
   ) {
-    final String subtitle = chatData['lastMessage'] ?? '';
     final Timestamp? timestamp = chatData['lastMessageTimestamp'];
-
     final itemBackgroundColor = unreadCount > 0
         ? Colors.white.withOpacity(0.15)
         : const Color(0xFF1A1A1A);
@@ -1244,21 +1274,6 @@ class _ChatListItem extends StatelessWidget {
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
-              color: unreadCount > 0
-                  ? Colors.white.withOpacity(0.8)
-                  : Colors.white.withOpacity(0.6),
-              fontSize: 14,
-              fontWeight: unreadCount > 0 ? FontWeight.w500 : FontWeight.normal,
-            ),
           ),
         ),
         trailing: Column(
@@ -1414,25 +1429,6 @@ class _ChatListItem extends StatelessWidget {
     if (difference.inDays == 0) return DateFormat('h:mm a').format(date);
     if (difference.inDays == 1) return 'Yesterday';
     return DateFormat('MM/dd/yy').format(date);
-  }
-
-  Future<String> _getChatName(
-    bool isGroup,
-    Map<String, dynamic> chatData,
-    String userId,
-  ) async {
-    if (isGroup) return chatData['groupName'] ?? 'Unnamed Group';
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .get();
-      if (!doc.exists) return 'Unknown User';
-      final data = doc.data();
-      return data?['name'] ?? data?['username'] ?? 'Unknown User';
-    } catch (e) {
-      return 'Unknown User';
-    }
   }
 
   Stream<String> _getChatNameStream(

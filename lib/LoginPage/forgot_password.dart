@@ -6,7 +6,11 @@ class ForgotPassword extends StatelessWidget {
   final TextEditingController usernameController;
   const ForgotPassword(this.usernameController, {super.key});
 
-  void _showFeedbackSnackBar(BuildContext context, String message, {bool isError = true}) {
+  void _showFeedbackSnackBar(
+    BuildContext context,
+    String message, {
+    bool isError = true,
+  }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, style: GoogleFonts.inter(color: Colors.white)),
@@ -22,23 +26,31 @@ class ForgotPassword extends StatelessWidget {
     return TextButton(
       onPressed: () async {
         if (usernameController.text.trim().isEmpty) {
-          _showFeedbackSnackBar(context, "Please enter your email to reset your password.");
+          _showFeedbackSnackBar(
+            context,
+            "Please enter your email to reset your password.",
+          );
           return;
         }
         try {
           await FirebaseAuth.instance.sendPasswordResetEmail(
             email: usernameController.text.trim(),
           );
-          _showFeedbackSnackBar(context, "Password reset email sent. Check your inbox.", isError: false);
+          _showFeedbackSnackBar(
+            context,
+            "Password reset email sent. Check your inbox.",
+            isError: false,
+          );
         } catch (e) {
-          _showFeedbackSnackBar(context, "Failed to send reset email. Please try again.");
+          _showFeedbackSnackBar(
+            context,
+            "Failed to send reset email. Please try again.",
+          );
         }
       },
       style: TextButton.styleFrom(
         foregroundColor: Colors.white.withOpacity(0.7),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       ),
       child: Text('Forgot Password?', style: GoogleFonts.inter()),
     );

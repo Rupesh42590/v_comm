@@ -1,4 +1,4 @@
-import 'dart:async'; // Required for StreamSubscription
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -16,19 +16,18 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
 
-  // State variable to hold the events from Firestore
   Map<DateTime, List<Map<String, dynamic>>> _firestoreEvents = {};
   late final StreamSubscription<QuerySnapshot> _eventsSubscription;
-  bool _isLoading = true; // For initial loading indicator
+  bool _isLoading = true;
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _mainScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    // Start listening to the database stream when the page is created
     _listenToEvents();
   }
 
@@ -39,12 +38,10 @@ class _CalendarPageState extends State<CalendarPage> {
       return;
     }
 
-    // Set up the background listener
     _eventsSubscription = _getEventsCollection().snapshots().listen(
       (snapshot) {
         if (!mounted) return;
 
-        // Process the data from Firestore
         final newEvents = <DateTime, List<Map<String, dynamic>>>{};
         for (var doc in snapshot.docs) {
           final data = doc.data();
@@ -60,11 +57,9 @@ class _CalendarPageState extends State<CalendarPage> {
           }
         }
 
-        // Update the local state, which will trigger a UI rebuild
         setState(() {
           _firestoreEvents = newEvents;
-          _isLoading =
-              false; // Turn off loading indicator after first data load
+          _isLoading = false;
         });
       },
       onError: (error) {
@@ -76,15 +71,13 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   void dispose() {
-    _eventsSubscription
-        .cancel(); // CRUCIAL: Stop listening to prevent memory leaks
+    _eventsSubscription.cancel();
     _titleController.dispose();
     _timeController.dispose();
     _scrollController.dispose();
+    _mainScrollController.dispose();
     super.dispose();
   }
-
-  // --- (The rest of your code for adding, editing, deleting, dialogs, and UI widgets is UNCHANGED) ---
 
   CollectionReference<Map<String, dynamic>> _getEventsCollection() {
     final user = FirebaseAuth.instance.currentUser;
@@ -595,157 +588,195 @@ class _CalendarPageState extends State<CalendarPage> {
                   colors: [Colors.black, Color(0xFF111111), Colors.black],
                 ),
               ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A1A),
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.4),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
+              child: SingleChildScrollView(
+                controller: _mainScrollController,
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1A1A),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
                         ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: TableCalendar(
-                        firstDay: DateTime.utc(2020, 1, 1),
-                        lastDay: DateTime.utc(2030, 12, 31),
-                        focusedDay: _focusedDay,
-                        selectedDayPredicate: (day) =>
-                            isSameDay(_selectedDay, day),
-                        onDaySelected: (selectedDay, focusedDay) {
-                          setState(() {
-                            _selectedDay = selectedDay;
-                            _focusedDay = focusedDay;
-                          });
-                        },
-                        daysOfWeekHeight: 40,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.4),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: TableCalendar(
+                          firstDay: DateTime.utc(2020, 1, 1),
+                          lastDay: DateTime.utc(2030, 12, 31),
+                          focusedDay: _focusedDay,
+                          selectedDayPredicate: (day) =>
+                              isSameDay(_selectedDay, day),
+                          onDaySelected: (selectedDay, focusedDay) {
+                            setState(() {
+                              _selectedDay = selectedDay;
+                              _focusedDay = focusedDay;
+                            });
+                          },
+                          daysOfWeekHeight: 40,
+                          rowHeight: 52,
+                          availableGestures: AvailableGestures.horizontalSwipe,
+                          eventLoader: _getEventsForDay,
 
-                        eventLoader: _getEventsForDay,
-                        headerStyle: HeaderStyle(
-                          formatButtonVisible: false,
-                          titleCentered: true,
-                          headerPadding: const EdgeInsets.only(
-                            top: 12.0,
-                            bottom: 15.0,
+                          // Custom builder to make only Sunday dates red
+                          calendarBuilders: CalendarBuilders(
+                            defaultBuilder: (context, day, focusedDay) {
+                              // Check if it's Sunday (weekday 7)
+                              if (day.weekday == DateTime.sunday) {
+                                return Center(
+                                  child: Text(
+                                    '${day.day}',
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                );
+                              }
+                              return null; // Use default styling for other days
+                            },
                           ),
-                          decoration: BoxDecoration(color: Colors.transparent),
-                          titleTextStyle: GoogleFonts.inter(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                          leftChevronPadding: const EdgeInsets.all(8),
-                          rightChevronPadding: const EdgeInsets.all(8),
-                          leftChevronIcon: Container(
-                            padding: const EdgeInsets.all(12),
+
+                          headerStyle: HeaderStyle(
+                            formatButtonVisible: false,
+                            titleCentered: true,
+                            headerPadding: const EdgeInsets.only(
+                              top: 12.0,
+                              bottom: 15.0,
+                            ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.25),
+                              color: Colors.transparent,
+                            ),
+                            titleTextStyle: GoogleFonts.inter(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                            leftChevronPadding: const EdgeInsets.all(8),
+                            rightChevronPadding: const EdgeInsets.all(8),
+                            leftChevronIcon: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.25),
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.chevron_left,
+                                color: Colors.white.withOpacity(0.9),
+                                size: 20,
                               ),
                             ),
-                            child: Icon(
-                              Icons.chevron_left,
-                              color: Colors.white.withOpacity(0.9),
-                              size: 20,
-                            ),
-                          ),
-                          rightChevronIcon: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.25),
+                            rightChevronIcon: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.25),
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.chevron_right,
+                                color: Colors.white.withOpacity(0.9),
+                                size: 20,
                               ),
                             ),
-                            child: Icon(
-                              Icons.chevron_right,
-                              color: Colors.white.withOpacity(0.9),
-                              size: 20,
+                          ),
+                          daysOfWeekStyle: DaysOfWeekStyle(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            weekdayStyle: TextStyle(
+                              color: Colors.white.withOpacity(0.8),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                            // Both Saturday and Sunday headers in normal white color
+                            weekendStyle: TextStyle(
+                              color: Colors.white.withOpacity(0.8),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
                             ),
                           ),
-                        ),
-                        daysOfWeekStyle: DaysOfWeekStyle(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          weekdayStyle: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                          weekendStyle: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                        ),
-                        calendarStyle: CalendarStyle(
-                          cellMargin: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 8,
-                          ),
-                          defaultTextStyle: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                          weekendTextStyle: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                          outsideTextStyle: TextStyle(
-                            color: Colors.white.withOpacity(0.3),
-                            fontSize: 16,
-                          ),
-                          todayDecoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.4),
-                              width: 2,
+                          calendarStyle: CalendarStyle(
+                            cellMargin: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 8,
                             ),
-                            shape: BoxShape.circle,
-                          ),
-                          selectedDecoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.5),
-                              width: 2,
+                            defaultTextStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
                             ),
+                            // Saturday stays white, only Sunday is red (handled in builder)
+                            weekendTextStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                            outsideTextStyle: TextStyle(
+                              color: Colors.white.withOpacity(0.3),
+                              fontSize: 16,
+                            ),
+                            // Today: circle border but NO background
+                            todayDecoration: BoxDecoration(
+                              color: Colors.transparent, // No background
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.4),
+                                width: 2,
+                              ),
+                              shape: BoxShape.circle,
+                            ),
+                            // Selected: circle border WITH background highlight
+                            selectedDecoration: BoxDecoration(
+                              color: Colors.white.withOpacity(
+                                0.2,
+                              ), // Background highlight
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.5),
+                                width: 2,
+                              ),
+                              shape: BoxShape.circle,
+                            ),
+                            selectedTextStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            markersMaxCount: 1,
+                            markerDecoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.8),
+                              shape: BoxShape.circle,
+                            ),
+                            markerSize: 5,
+                            markerMargin: const EdgeInsets.symmetric(
+                              horizontal: 0.5,
+                            ),
+                            markersAnchor: 0.7,
                           ),
-                          selectedTextStyle: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                          markersMaxCount: 1,
-                          markerDecoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.8),
-                            shape: BoxShape.circle,
-                          ),
-                          markerSize: 8,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: Container(
+                    const SizedBox(height: 16),
+                    Container(
                       margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1A1A1A),
                         borderRadius: BorderRadius.circular(30),
@@ -762,6 +793,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Row(
                             children: [
@@ -791,83 +823,66 @@ class _CalendarPageState extends State<CalendarPage> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          Expanded(
-                            child: todayEvents.isEmpty
-                                // --- THIS IS THE MODIFIED SECTION ---
-                                ? Container(
-                                    // The outer Center widget is removed.
-                                    // This container will now expand to fill the available width.
-                                    padding: const EdgeInsets.all(32),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.05),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.1),
-                                      ),
-                                    ),
-                                    // A Center widget is added INSIDE to center the content.
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.event_busy,
-                                            color: Colors.white.withOpacity(
-                                              0.4,
-                                            ),
-                                            size: 56,
-                                          ),
-                                          const SizedBox(height: 16),
-                                          Text(
-                                            "No Events",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 18,
-                                              color: Colors.white.withOpacity(
-                                                0.6,
-                                              ),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                // The rest of the code remains the same
-                                : Scrollbar(
-                                    controller: _scrollController,
-                                    thumbVisibility: true,
-                                    thickness: 8,
-                                    radius: const Radius.circular(10),
-                                    trackVisibility: true,
-                                    child: ListView.builder(
-                                      controller: _scrollController,
-                                      physics: const BouncingScrollPhysics(),
-                                      padding: const EdgeInsets.only(
-                                        bottom: 120,
-                                      ),
-                                      itemCount: todayEvents.length,
-                                      itemBuilder: (context, index) {
-                                        final event = todayEvents[index];
-                                        return GestureDetector(
-                                          onTap: () => _showEventOptions(event),
-                                          child: _eventCard(
-                                            title: event["title"] ?? '',
-                                            time: event["time"] ?? '',
-                                            onEdit: () => _editEvent(event),
-                                          ),
-                                        );
-                                      },
+                          todayEvents.isEmpty
+                              ? Container(
+                                  padding: const EdgeInsets.all(32),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.1),
                                     ),
                                   ),
-                          ),
-                          SizedBox(height: 20),
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.event_busy,
+                                          color: Colors.white.withOpacity(0.4),
+                                          size: 56,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          "No Events",
+                                          style: GoogleFonts.inter(
+                                            fontSize: 18,
+                                            color: Colors.white.withOpacity(
+                                              0.6,
+                                            ),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  controller: _scrollController,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.only(bottom: 0),
+                                  itemCount: todayEvents.length,
+                                  itemBuilder: (context, index) {
+                                    final event = todayEvents[index];
+                                    return GestureDetector(
+                                      onTap: () => _showEventOptions(event),
+                                      child: _eventCard(
+                                        title: event["title"] ?? '',
+                                        time: event["time"] ?? '',
+                                        onEdit: () => _editEvent(event),
+                                      ),
+                                    );
+                                  },
+                                ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 100),
+                  ],
+                ),
               ),
             ),
     );

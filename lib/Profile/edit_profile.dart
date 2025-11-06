@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -49,9 +50,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
       return;
     }
 
-    final phoneRegex = RegExp(r'^\+?[0-9]{7,}$');
+    // ✅ Allow only 10 digits
+    final phoneRegex = RegExp(r'^[0-9]{10}$');
     if (!phoneRegex.hasMatch(phoneNumber)) {
-      _showFeedbackSnackBar("Please enter a valid phone number.");
+      _showFeedbackSnackBar("Phone number must be exactly 10 digits.");
       return;
     }
 
@@ -207,6 +209,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: [
+        LengthLimitingTextInputFormatter(10), // ✅ block > 10 digits
+        FilteringTextInputFormatter.digitsOnly, // ✅ only numbers allowed
+      ],
       style: GoogleFonts.inter(color: Colors.white, fontSize: 16),
       decoration: InputDecoration(
         labelText: labelText,

@@ -11,7 +11,7 @@ class UserName extends StatelessWidget {
     return TextField(
       controller: usernameController,
       cursorColor: Colors.blue,
-      
+
       style: GoogleFonts.inter(color: Colors.white, fontSize: 16),
       decoration: InputDecoration(
         labelText: "Username (Email)",

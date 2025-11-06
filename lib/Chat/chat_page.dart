@@ -151,7 +151,7 @@ const List<String> kCommonEmojis = [
   '⚡️',
 ];
 
-// Message Model - UPDATED with sender name for groups
+// Message Model
 class Message {
   final String id;
   final String text;
@@ -172,7 +172,7 @@ class Message {
   final String? senderId;
   final String? forwardedBy;
   final String? forwardedByName;
-  final String? senderName; // NEW: For displaying sender name in groups
+  final String? senderName;
 
   Message({
     required this.id,
@@ -233,7 +233,7 @@ class Message {
       senderId: data['senderId']?.toString(),
       forwardedBy: data['forwardedBy']?.toString(),
       forwardedByName: data['forwardedByName']?.toString(),
-      senderName: data['senderName']?.toString(), // NEW
+      senderName: data['senderName']?.toString(),
     );
   }
 }
@@ -274,7 +274,6 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     _messageController.addListener(_onMessageTextChanged);
-    // Update online status
     if (currentUser != null) {
       FirebaseFirestore.instance
           .collection('users')
@@ -289,7 +288,6 @@ class _ChatPageState extends State<ChatPage> {
     _messageController.dispose();
     _scrollController.dispose();
     _searchController.dispose();
-    // Update offline status
     if (currentUser != null) {
       FirebaseFirestore.instance
           .collection('users')
@@ -309,7 +307,6 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  // UPDATED: Now includes sender name for groups
   Future<void> _sendMessage({String? imageUrl}) async {
     if (currentUser == null) return;
 
@@ -321,14 +318,15 @@ class _ChatPageState extends State<ChatPage> {
         .doc(widget.chatRoomId);
 
     _messageController.clear();
-    setState(() {
-      _showSendButton = false;
-      if (_replyingTo != null) {
-        _replyingTo = null;
-      }
-    });
+    if (mounted) {
+      setState(() {
+        _showSendButton = false;
+        if (_replyingTo != null) {
+          _replyingTo = null;
+        }
+      });
+    }
 
-    // Get sender name for group messages
     String? senderName;
     if (widget.isGroup) {
       final userDoc = await FirebaseFirestore.instance
@@ -348,7 +346,7 @@ class _ChatPageState extends State<ChatPage> {
       'isEdited': false,
       'reactions': [],
       'isForwarded': false,
-      if (widget.isGroup && senderName != null) 'senderName': senderName, // NEW
+      if (widget.isGroup && senderName != null) 'senderName': senderName,
       if (imageUrl != null) 'imageUrl': imageUrl,
       if (_replyingTo != null) ...{
         'replyToId': _replyingTo!.id,
@@ -397,7 +395,9 @@ class _ChatPageState extends State<ChatPage> {
 
       if (pickedFile == null) return;
 
-      setState(() => _isUploading = true);
+      if (mounted) {
+        setState(() => _isUploading = true);
+      }
 
       String fileName = 'img_${DateTime.now().millisecondsSinceEpoch}.jpg';
       Reference storageRef = FirebaseStorage.instance
@@ -484,24 +484,26 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _toggleMessageSelection(String messageId) {
-    setState(() {
-      if (_selectedMessages.contains(messageId)) {
-        _selectedMessages.remove(messageId);
-        if (_selectedMessages.isEmpty) {
-          _isSelectionMode = false;
-        }
+    if (_selectedMessages.contains(messageId)) {
+      _selectedMessages.remove(messageId);
+      if (_selectedMessages.isEmpty) {
+        setState(() => _isSelectionMode = false);
       } else {
-        _selectedMessages.add(messageId);
-        _isSelectionMode = true;
+        setState(() {});
       }
-    });
+    } else {
+      _selectedMessages.add(messageId);
+      if (!_isSelectionMode) {
+        setState(() => _isSelectionMode = true);
+      } else {
+        setState(() {});
+      }
+    }
   }
 
   void _cancelSelection() {
-    setState(() {
-      _selectedMessages.clear();
-      _isSelectionMode = false;
-    });
+    _selectedMessages.clear();
+    setState(() => _isSelectionMode = false);
   }
 
   void _forwardMessages() async {
@@ -786,9 +788,7 @@ class _ChatPageState extends State<ChatPage> {
               (widget.isGroup ? widget.otherUser['groupName'] : 'Someone'),
           'forwardedBy': currentUser!.uid,
           'forwardedByName': currentUserName,
-          if (isGroup)
-            'senderName':
-                currentUserName, // NEW: Add sender name for group forwards
+          if (isGroup) 'senderName': currentUserName,
           if (data['imageUrl'] != null) 'imageUrl': data['imageUrl'],
         };
 
@@ -814,10 +814,8 @@ class _ChatPageState extends State<ChatPage> {
 
       if (mounted) {
         final messageCount = _selectedMessages.length;
-        setState(() {
-          _selectedMessages.clear();
-          _isSelectionMode = false;
-        });
+        _selectedMessages.clear();
+        setState(() => _isSelectionMode = false);
         _showSnackBar(
           '${messageCount > 1 ? "$messageCount messages" : "Message"} forwarded to $recipientName',
         );
@@ -976,17 +974,72 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  // ✅ --- START: CORRECTED DELETE LOGIC --- ✅
+
+  /// This is the new helper function that updates the parent chat document after a deletion.
+  /// This ensures the homepage gets the latest information.
+  Future<void> _updateLastMessageAfterDeletion() async {
+    if (currentUser == null) return;
+    final chatRef = FirebaseFirestore.instance
+        .collection('chats')
+        .doc(widget.chatRoomId);
+
+    // Get the latest message that is still visible to the current user.
+    final messagesSnapshot = await chatRef
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .get();
+
+    // Find the first message in the ordered list that is not deleted for the current user.
+    final validMessages = messagesSnapshot.docs.where((doc) {
+      final data = doc.data();
+      final isDeletedForAll = data['isDeleted'] ?? false;
+      final deletedForMe =
+          (data['deletedFor'] as List<dynamic>?)?.contains(currentUser!.uid) ??
+          false;
+      return !isDeletedForAll && !deletedForMe;
+    }).toList();
+
+    if (validMessages.isNotEmpty) {
+      // If there are still messages, update the parent chat with the new latest one.
+      final lastDoc = validMessages.first;
+      final lastData = lastDoc.data();
+      String lastMsgText = lastData['text'] ?? '';
+      if (lastMsgText.isEmpty && lastData['imageUrl'] != null) {
+        lastMsgText = '📷 Photo';
+      }
+
+      await chatRef.update({
+        'lastMessage': lastMsgText,
+        'lastMessageTimestamp': lastData['timestamp'],
+        'lastMessageSenderId': lastData['senderId'],
+      });
+    } else {
+      // No messages left. Clear the last message details to hide it from the homepage.
+      await chatRef.update({
+        'lastMessage': '',
+        'lastMessageTimestamp': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
   Future<void> _deleteMessageForMe(String messageId) async {
+    if (currentUser == null) return;
     try {
       await FirebaseFirestore.instance
           .collection('chats')
           .doc(widget.chatRoomId)
           .collection('messages')
           .doc(messageId)
-          .delete();
+          .update({
+            'deletedFor': FieldValue.arrayUnion([currentUser!.uid]),
+          });
+
+      // After deleting, update the parent chat document. This is the crucial fix.
+      await _updateLastMessageAfterDeletion();
 
       if (mounted) {
-        _showSnackBar('Message deleted');
+        _showSnackBar('Message removed for you');
       }
     } catch (e) {
       if (mounted) {
@@ -1011,6 +1064,9 @@ class _ChatPageState extends State<ChatPage> {
             'imageUrl': FieldValue.delete(),
           });
 
+      // After deleting, update the parent chat document. This is the crucial fix.
+      await _updateLastMessageAfterDeletion();
+
       if (mounted) {
         _showSnackBar('Message deleted for everyone');
       }
@@ -1020,6 +1076,8 @@ class _ChatPageState extends State<ChatPage> {
       }
     }
   }
+
+  // ✅ --- END: CORRECTED DELETE LOGIC --- ✅
 
   void _reportMessage(String messageId) async {
     if (currentUser == null) return;
@@ -1215,11 +1273,9 @@ class _ChatPageState extends State<ChatPage> {
                 title: 'Forward',
                 onTap: () {
                   Navigator.pop(modalContext);
-                  setState(() {
-                    _selectedMessages.clear();
-                    _selectedMessages.add(message.id);
-                    _isSelectionMode = true;
-                  });
+                  _selectedMessages.clear();
+                  _selectedMessages.add(message.id);
+                  setState(() => _isSelectionMode = true);
                   _forwardMessages();
                 },
               ),
@@ -1231,16 +1287,7 @@ class _ChatPageState extends State<ChatPage> {
                   _toggleMessageSelection(message.id);
                 },
               ),
-              _buildMenuItem(
-                icon: message.isPinned
-                    ? Icons.push_pin_outlined
-                    : Icons.push_pin,
-                title: message.isPinned ? 'Unpin' : 'Pin',
-                onTap: () {
-                  Navigator.pop(modalContext);
-                  _togglePinMessage(message.id, message.isPinned);
-                },
-              ),
+
               _buildMenuItem(
                 icon: message.isStarred ? Icons.star : Icons.star_outline,
                 title: message.isStarred ? 'Unstar' : 'Star',
@@ -1521,14 +1568,7 @@ class _ChatPageState extends State<ChatPage> {
                   _showContactInfo();
                 },
               ),
-              _buildMenuItem(
-                icon: Icons.push_pin,
-                title: 'Pinned Messages',
-                onTap: () {
-                  Navigator.pop(modalContext);
-                  _showPinnedMessages();
-                },
-              ),
+
               _buildMenuItem(
                 icon: Icons.star,
                 title: 'Starred Messages',
@@ -1555,15 +1595,7 @@ class _ChatPageState extends State<ChatPage> {
                   _showReportUserDialog();
                 },
               ),
-              _buildMenuItem(
-                icon: Icons.block,
-                title: 'Block ${widget.otherUser['name'] ?? 'User'}',
-                color: Colors.red,
-                onTap: () {
-                  Navigator.pop(modalContext);
-                  _showBlockUserDialog();
-                },
-              ),
+
               _buildMenuItem(
                 icon: Icons.delete_outline,
                 title: 'Delete chat',
@@ -1628,60 +1660,6 @@ class _ChatPageState extends State<ChatPage> {
               }
             },
             child: Text('Report', style: GoogleFonts.inter(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showBlockUserDialog() {
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: Text(
-          'Block ${widget.otherUser['name'] ?? 'User'}?',
-          style: GoogleFonts.inter(color: Colors.white),
-        ),
-        content: Text(
-          'Blocked users cannot send you messages.',
-          style: GoogleFonts.inter(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(color: Colors.white70),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              if (currentUser == null) return;
-
-              Navigator.pop(dialogContext);
-              final otherUserId = widget.otherUser['id'];
-              if (otherUserId == null) return;
-
-              try {
-                await FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(currentUser!.uid)
-                    .update({
-                      'blockedUsers': FieldValue.arrayUnion([otherUserId]),
-                    });
-                if (mounted) {
-                  _showSnackBar('User blocked successfully');
-                }
-              } catch (e) {
-                if (mounted) {
-                  _showSnackBar('Failed to block user', isError: true);
-                }
-              }
-            },
-            child: Text('Block', style: GoogleFonts.inter(color: Colors.red)),
           ),
         ],
       ),
@@ -2058,12 +2036,10 @@ class _ChatPageState extends State<ChatPage> {
                   _DateSeparator(date: message.timestamp, isNow: true)
                 else if (showDateSeparator)
                   _DateSeparator(date: message.timestamp),
-
-                // UPDATED: Pass isGroup flag to MessageBubble
                 _MessageBubble(
                   key: ValueKey(message.id),
                   message: message,
-                  isGroup: widget.isGroup, // NEW
+                  isGroup: widget.isGroup,
                   onLongPress: () {
                     if (_isSelectionMode) {
                       _toggleMessageSelection(message.id);
@@ -2265,41 +2241,23 @@ class _ChatPageState extends State<ChatPage> {
                         final lastSeen = data['lastSeen'] as Timestamp?;
                         if (isOnline) {
                           return Text(
-                            "online",
+                            "Present",
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               color: Colors.green,
                             ),
                           );
-                        } else if (lastSeen != null) {
-                          final lastSeenDate = lastSeen.toDate();
-                          final now = DateTime.now();
-                          final difference = now.difference(lastSeenDate);
-                          String status;
-                          if (difference.inMinutes < 1) {
-                            status = 'online';
-                          } else if (difference.inHours < 1) {
-                            status = 'Last seen today';
-                          } else if (difference.inDays < 1) {
-                            status =
-                                'Last seen ${DateFormat('h:mm a').format(lastSeenDate)}';
-                          } else {
-                            status =
-                                'Last seen ${DateFormat('MMM d').format(lastSeenDate)}';
-                          }
-                          return Text(
-                            status,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: Colors.white.withOpacity(0.7),
-                            ),
-                          );
                         } else {
                           return Text(
-                            "offline",
+                            "Absent",
                             style: GoogleFonts.inter(
                               fontSize: 12,
-                              color: Colors.white.withOpacity(0.7),
+                              color: const Color.fromARGB(
+                                255,
+                                241,
+                                53,
+                                53,
+                              ).withOpacity(0.7),
                             ),
                           );
                         }
@@ -2330,10 +2288,10 @@ class _ChatPageState extends State<ChatPage> {
   }
 }
 
-// MESSAGE BUBBLE - UPDATED to show sender name in groups
+// MESSAGE BUBBLE
 class _MessageBubble extends StatelessWidget {
   final Message message;
-  final bool isGroup; // NEW
+  final bool isGroup;
   final VoidCallback onLongPress;
   final VoidCallback onTap;
   final bool isSelected;
@@ -2342,7 +2300,7 @@ class _MessageBubble extends StatelessWidget {
   const _MessageBubble({
     super.key,
     required this.message,
-    required this.isGroup, // NEW
+    required this.isGroup,
     required this.onLongPress,
     required this.onTap,
     this.isSelected = false,
@@ -2490,7 +2448,6 @@ class _MessageBubble extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // NEW: Show sender name in group chats
                         if (isGroup && !isMe && message.senderName != null)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 4),
@@ -3088,7 +3045,7 @@ class PinnedMessagesPage extends StatelessWidget {
   }
 }
 
-// CONTACT INFO PAGE - EDIT ABOUT FOR BOTH PERSONAL AND GROUP
+// CONTACT INFO PAGE
 class ContactInfoPage extends StatefulWidget {
   final Map<String, dynamic> user;
   final bool isGroup;
@@ -3117,7 +3074,6 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     super.dispose();
   }
 
-  // Edit group description
   Future<void> _editGroupAbout(String currentAbout) async {
     final TextEditingController aboutController = TextEditingController(
       text: currentAbout,
@@ -3201,91 +3157,6 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     );
   }
 
-  // Edit personal about
-  Future<void> _editPersonalAbout(String currentAbout) async {
-    final TextEditingController aboutController = TextEditingController(
-      text: currentAbout,
-    );
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: Text(
-          'Edit About',
-          style: GoogleFonts.inter(color: Colors.white),
-        ),
-        content: TextField(
-          controller: aboutController,
-          style: GoogleFonts.inter(color: Colors.white),
-          maxLines: 3,
-          maxLength: 200,
-          autofocus: true,
-          decoration: InputDecoration(
-            hintText: 'Enter your status',
-            hintStyle: GoogleFonts.inter(color: Colors.white54),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-            ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFF1565C0)),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(color: Colors.white70),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              final newAbout = aboutController.text.trim();
-              if (newAbout.isNotEmpty && newAbout != currentAbout) {
-                try {
-                  await FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(widget.currentUserId)
-                      .update({'about': newAbout});
-
-                  if (mounted) {
-                    Navigator.pop(dialogContext);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('About updated successfully'),
-                        backgroundColor: Colors.green,
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Failed to update: $e'),
-                        backgroundColor: Colors.red,
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                }
-              } else {
-                Navigator.pop(dialogContext);
-              }
-            },
-            child: Text(
-              'Save',
-              style: GoogleFonts.inter(color: const Color(0xFF1565C0)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // NEW: Add member function restored
   Future<void> _showAddMemberDialog(List<String> currentMembers) async {
     try {
       final usersSnapshot = await FirebaseFirestore.instance
@@ -3421,7 +3292,6 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     }
   }
 
-  // NEW: Add member to group function
   Future<void> _addMemberToGroup(
     String userId,
     Map<String, dynamic> userData,
@@ -3511,8 +3381,194 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
             const SizedBox(height: 40),
             const Divider(color: Colors.white24),
 
-            // About section - EDIT FOR BOTH GROUPS AND PERSONAL
-            if (widget.isGroup)
+            if (!widget.isGroup) ...[
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('chats')
+                      .where('isGroup', isEqualTo: true)
+                      .where('participants', arrayContains: widget.user['id'])
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return ListTile(
+                        leading: const Icon(
+                          Icons.group,
+                          color: Colors.white70,
+                          size: 22,
+                        ),
+                        title: Text(
+                          'Groups',
+                          style: GoogleFonts.inter(color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          'Loading...',
+                          style: GoogleFonts.inter(color: Colors.white54),
+                        ),
+                      );
+                    }
+
+                    final groups = snapshot.data!.docs;
+                    final groupCount = groups.length;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.group,
+                                  color: Colors.white70,
+                                  size: 22,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Common Groups',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1565C0).withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '$groupCount',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: const Color(0xFF1565C0),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (groupCount == 0)
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'No common groups',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white54,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: groupCount,
+                            itemBuilder: (context, index) {
+                              final groupData =
+                                  groups[index].data() as Map<String, dynamic>;
+                              final groupName =
+                                  groupData['groupName'] ?? 'Unnamed Group';
+                              final participantCount =
+                                  (groupData['participants'] as List?)
+                                      ?.length ??
+                                  0;
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1A1A1A),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.1),
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: const Color(0xFF1565C0),
+                                    child: const Icon(
+                                      Icons.group,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    groupName,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    '$participantCount member${participantCount != 1 ? 's' : ''}',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white54,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.white38,
+                                    size: 14,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              const Divider(color: Colors.white24),
+              ListTile(
+                leading: const Icon(
+                  Icons.phone,
+                  color: Colors.white70,
+                  size: 22,
+                ),
+                title: Text(
+                  'Phone',
+                  style: GoogleFonts.inter(color: Colors.white),
+                ),
+                subtitle: Text(
+                  widget.user['phone']?.toString() ?? 'Not available',
+                  style: GoogleFonts.inter(color: Colors.white54),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.email,
+                  color: Colors.white70,
+                  size: 22,
+                ),
+                title: Text(
+                  'Email',
+                  style: GoogleFonts.inter(color: Colors.white),
+                ),
+                subtitle: Text(
+                  widget.user['email']?.toString() ?? 'Not available',
+                  style: GoogleFonts.inter(color: Colors.white54),
+                ),
+              ),
+            ],
+
+            if (widget.isGroup) ...[
               StreamBuilder<DocumentSnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('chats')
@@ -3571,101 +3627,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
                         : null,
                   );
                 },
-              )
-            else
-              // Personal chat - Edit own about
-              // Personal chat - Edit own about
-              StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(widget.currentUserId)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return ListTile(
-                      leading: const Icon(
-                        Icons.info_outline,
-                        color: Colors.white70,
-                        size: 22,
-                      ),
-                      title: Text(
-                        'About',
-                        style: GoogleFonts.inter(color: Colors.white),
-                      ),
-                      subtitle: Text(
-                        'Loading...',
-                        style: GoogleFonts.inter(color: Colors.white54),
-                      ),
-                    );
-                  }
-
-                  final currentUserData =
-                      snapshot.data!.data() as Map<String, dynamic>?;
-                  final currentUserAbout =
-                      currentUserData?['about'] ??
-                      'Hey there! I am using this app.';
-
-                  return ListTile(
-                    leading: const Icon(
-                      Icons.info_outline,
-                      color: Colors.white70,
-                      size: 22,
-                    ),
-                    title: Text(
-                      'About',
-                      style: GoogleFonts.inter(color: Colors.white),
-                    ),
-                    subtitle: Text(
-                      widget.user['about']?.toString() ??
-                          'Hey there! I am using this app.',
-                      style: GoogleFonts.inter(color: Colors.white54),
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(
-                        Icons.edit,
-                        color: Colors.white70,
-                        size: 20,
-                      ),
-                      onPressed: () => _editPersonalAbout(currentUserAbout),
-                      splashRadius: 24,
-                    ),
-                  ); // <- This closing parenthesis was missing
-                },
               ),
-            if (!widget.isGroup) ...[
-              const Divider(color: Colors.white24),
-              ListTile(
-                leading: const Icon(
-                  Icons.phone,
-                  color: Colors.white70,
-                  size: 22,
-                ),
-                title: Text(
-                  'Phone',
-                  style: GoogleFonts.inter(color: Colors.white),
-                ),
-                subtitle: Text(
-                  widget.user['phone']?.toString() ?? 'Not available',
-                  style: GoogleFonts.inter(color: Colors.white54),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.email,
-                  color: Colors.white70,
-                  size: 22,
-                ),
-                title: Text(
-                  'Email',
-                  style: GoogleFonts.inter(color: Colors.white),
-                ),
-                subtitle: Text(
-                  widget.user['email']?.toString() ?? 'Not available',
-                  style: GoogleFonts.inter(color: Colors.white54),
-                ),
-              ),
-            ],
-            if (widget.isGroup) ...[
               const Divider(color: Colors.white24),
               StreamBuilder<DocumentSnapshot>(
                 stream: FirebaseFirestore.instance

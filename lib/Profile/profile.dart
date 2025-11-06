@@ -147,12 +147,6 @@ class ProfilePage extends StatelessWidget {
                       'mailto:support@vcomm.com?subject=Support Request',
                     ),
                   ),
-                  _settingsTile(
-                    context: context,
-                    icon: Icons.description_outlined,
-                    title: "Terms of Service",
-                    onTap: () => _launchUrl('https://www.yourapp.com/terms'),
-                  ),
 
                   // --- MODIFIED LOGOUT BUTTON SECTION ---
                   Padding(
