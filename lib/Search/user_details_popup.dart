@@ -53,7 +53,6 @@ class UserDetailsPopup extends StatelessWidget {
 
   void _showTimetablePopup(BuildContext context, String? timetableUrl) {
     if (timetableUrl == null || timetableUrl.isEmpty) {
-      // Show message if no timetable
       showDialog(
         context: context,
         barrierColor: Colors.black.withOpacity(0.8),
@@ -111,7 +110,6 @@ class UserDetailsPopup extends StatelessWidget {
       return;
     }
 
-    // Show zoomable timetable
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.9),
@@ -120,7 +118,6 @@ class UserDetailsPopup extends StatelessWidget {
         insetPadding: const EdgeInsets.all(10),
         child: Stack(
           children: [
-            // Zoomable Image
             PhotoView(
               imageProvider: NetworkImage(timetableUrl),
               minScale: PhotoViewComputedScale.contained,
@@ -159,7 +156,6 @@ class UserDetailsPopup extends StatelessWidget {
                 );
               },
             ),
-            // Close Button
             Positioned(
               top: 20,
               right: 20,
@@ -179,7 +175,6 @@ class UserDetailsPopup extends StatelessWidget {
                 ),
               ),
             ),
-            // Timetable label
             Positioned(
               top: 20,
               left: 20,
@@ -233,9 +228,11 @@ class UserDetailsPopup extends StatelessWidget {
 
     final String uid = userData['uid'] ?? userData['id'];
     final String? photoUrl = _convertGDriveLink(userData['photoUrl']);
-    final String phoneNumber = userData['phone'] ?? '';
 
-    // ✅ Check if viewing own profile
+    // ✅ FIXED: Now reads `phoneNumber` (fallback `phone`)
+    final String phoneNumber =
+        userData['phoneNumber'] ?? userData['phone'] ?? '';
+
     final bool isOwnProfile = currentUser?.uid == uid;
 
     return Container(
@@ -261,7 +258,6 @@ class UserDetailsPopup extends StatelessWidget {
             ),
           ),
 
-          // ✅ Image box fixed
           Expanded(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -316,7 +312,6 @@ class UserDetailsPopup extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // ✅ Status Indicator - Present/Absent
                 StreamBuilder<DocumentSnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('users')
@@ -335,10 +330,12 @@ class UserDetailsPopup extends StatelessWidget {
                 Divider(color: Colors.white.withOpacity(0.2), height: 30),
 
                 _buildDetailRow(Icons.email_outlined, email),
+
                 if (phoneNumber.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _buildDetailRow(Icons.phone_outlined, phoneNumber),
                 ],
+
                 const SizedBox(height: 12),
                 _buildDetailRow(Icons.business_center_outlined, dept),
                 const SizedBox(height: 12),
@@ -346,7 +343,6 @@ class UserDetailsPopup extends StatelessWidget {
 
                 Divider(color: Colors.white.withOpacity(0.2), height: 30),
 
-                // ✅ Timetable Button (fetches from Firestore)
                 StreamBuilder<DocumentSnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('users')
@@ -382,7 +378,6 @@ class UserDetailsPopup extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                // ✅ Chat Button - Hidden if viewing own profile
                 if (!isOwnProfile)
                   SizedBox(
                     width: double.infinity,
@@ -430,7 +425,6 @@ class UserDetailsPopup extends StatelessWidget {
     );
   }
 
-  // ✅ Updated Status Indicator - Present/Absent
   Widget _buildStatusIndicator(bool isPresent) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

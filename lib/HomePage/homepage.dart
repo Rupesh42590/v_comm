@@ -383,20 +383,6 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                     ),
                     child: Row(
                       children: [
-                        /// Left Side - Avatar
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.white.withOpacity(0.2),
-                          child: Text(
-                            name.isNotEmpty ? name[0].toUpperCase() : "U",
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-
                         const SizedBox(width: 16),
 
                         /// Middle - User Info

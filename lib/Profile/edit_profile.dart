@@ -50,7 +50,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       return;
     }
 
-    // ✅ Allow only 10 digits
+    // 10 digits only
     final phoneRegex = RegExp(r'^[0-9]{10}$');
     if (!phoneRegex.hasMatch(phoneNumber)) {
       _showFeedbackSnackBar("Phone number must be exactly 10 digits.");
@@ -65,7 +65,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (user == null) throw Exception("User not found");
 
       final dataToUpdate = {
-        'phoneNumber': phoneNumber,
+        'phoneNumber': phoneNumber, // ✅ ONLY field used
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
@@ -132,7 +132,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             children: [
               const SizedBox(height: 20),
 
-              // --- PROFILE IMAGE (VIEW ONLY) ---
               Center(
                 child: CircleAvatar(
                   radius: 60,
@@ -152,7 +151,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
               const SizedBox(height: 40),
 
-              // --- PHONE INPUT ---
               _buildTextField(
                 controller: _phoneController,
                 labelText: "Phone Number",
@@ -210,8 +208,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
       controller: controller,
       keyboardType: keyboardType,
       inputFormatters: [
-        LengthLimitingTextInputFormatter(10), // ✅ block > 10 digits
-        FilteringTextInputFormatter.digitsOnly, // ✅ only numbers allowed
+        LengthLimitingTextInputFormatter(10),
+        FilteringTextInputFormatter.digitsOnly,
       ],
       style: GoogleFonts.inter(color: Colors.white, fontSize: 16),
       decoration: InputDecoration(
