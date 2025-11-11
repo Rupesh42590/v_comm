@@ -376,305 +376,22 @@ For Firebase-specific issues:
    - Test on multiple devices
 
 ---
-Excellent — you’ve got a **Firebase Admin Panel** HTML app that lets you:
-✅ Manually add users
-✅ Bulk import via CSV
-✅ View all users with photos and details
-
-You want to:
-
-1. **Remove sensitive Firebase keys**
-2. Provide a **safe template (without real keys)**
-3. Include a **clean README** explaining how to use this instead of manually adding users in Firebase Console
-
-Let’s do both 👇
+Sure — here’s the **exact section** you can **paste at the end of your main README** (after your V-COMM Flutter setup).
+It’s the **Firebase Admin Panel** documentation only — clean, formatted, and safe.
 
 ---
 
-## 🧩 Cleaned HTML File (Safe Version)
-
-Here’s your `index.html` with all Firebase credentials **removed and replaced** with placeholders.
-
-Save it as `index.html` inside a folder like `firebase-admin-panel/`:
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>V-COMM Admin Panel</title>
-    <link rel="stylesheet" href="style.css" />
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #121212;
-        color: #fff;
-        margin: 0;
-        padding: 0;
-      }
-      .container {
-        width: 90%;
-        max-width: 900px;
-        margin: 20px auto;
-      }
-      input,
-      button {
-        padding: 8px;
-        margin: 5px 0;
-        width: 100%;
-        border-radius: 5px;
-        border: none;
-      }
-      button {
-        background: #007bff;
-        color: white;
-        cursor: pointer;
-      }
-      button:hover {
-        background: #0056b3;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-      }
-      th,
-      td {
-        border: 1px solid #fff;
-        padding: 8px;
-        text-align: left;
-      }
-      th {
-        background: #333;
-      }
-      td {
-        background: #222;
-      }
-      .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        display: block;
-        margin: 0 auto;
-      }
-      #loading {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        color: #fff;
-        font-size: 24px;
-        text-align: center;
-        line-height: 100vh;
-        z-index: 1000;
-      }
-      #toast {
-        visibility: hidden;
-        min-width: 250px;
-        margin-left: -125px;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        border-radius: 4px;
-        padding: 16px;
-        position: fixed;
-        z-index: 1001;
-        left: 50%;
-        bottom: 30px;
-        font-size: 17px;
-      }
-      #toast.show {
-        visibility: visible;
-        animation: fadein 0.5s, fadeout 0.5s 2.5s;
-      }
-      @keyframes fadein {
-        from { bottom: 0; opacity: 0; }
-        to { bottom: 30px; opacity: 1; }
-      }
-      @keyframes fadeout {
-        from { bottom: 30px; opacity: 1; }
-        to { bottom: 0; opacity: 0; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="loading">Loading...</div>
-    <div id="toast"></div>
-
-    <div class="container">
-      <h1>V-COMM Admin Panel</h1>
-
-      <form id="manualForm">
-        <h2>Manual User Creation</h2>
-        <input type="text" id="name" placeholder="Name" required />
-        <input type="email" id="email" placeholder="Email" required />
-        <input type="password" id="password" placeholder="Password" required />
-        <input type="text" id="dept" placeholder="Department" required />
-        <input type="text" id="id" placeholder="Custom ID" required />
-        <input type="tel" id="phone" placeholder="Phone Number" />
-        <input type="url" id="photoUrl" placeholder="Profile Picture URL (optional)" />
-        <button type="submit">Add User</button>
-      </form>
-
-      <hr />
-
-      <div>
-        <h2>Import Users via CSV</h2>
-        <p><strong>Required Columns:</strong> Name, Email, Password, Dept, ID, Phone, PhotoUrl</p>
-        <input type="file" id="csvFile" accept=".csv" />
-        <button id="importCsvBtn">Import CSV Users</button>
-      </div>
-
-      <hr />
-
-      <h2>All Users</h2>
-      <table id="usersTable">
-        <thead>
-          <tr>
-            <th>Avatar</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Department</th>
-            <th>ID</th>
-            <th>Phone</th>
-            <th>Online</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <script>
-      // 🔒 Firebase Configuration (Replace with your own)
-      const firebaseConfig = {
-        apiKey: "YOUR_API_KEY_HERE",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID",
-      };
-
-      firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
-      const db = firebase.firestore();
-
-      const manualForm = document.getElementById("manualForm");
-      const csvFile = document.getElementById("csvFile");
-      const importCsvBtn = document.getElementById("importCsvBtn");
-      const usersTableBody = document.querySelector("#usersTable tbody");
-      const loading = document.getElementById("loading");
-      const toast = document.getElementById("toast");
-
-      let csvData = [];
-
-      function showToast(msg) {
-        toast.innerText = msg;
-        toast.className = "show";
-        setTimeout(() => (toast.className = toast.className.replace("show", "")), 3000);
-      }
-
-      async function addUser(userData) {
-        try {
-          const userCredential = await auth.createUserWithEmailAndPassword(
-            userData.email,
-            userData.password
-          );
-          const user = userCredential.user;
-
-          await db.collection("users").doc(user.uid).set({
-            name: userData.name,
-            email: userData.email,
-            dept: userData.dept,
-            customId: userData.id,
-            phoneNumber: userData.phone || "",
-            photoUrl: userData.photoUrl || "",
-            isOnline: false,
-            createdAt: new Date(),
-          });
-
-          showToast(`User ${userData.name} added!`);
-        } catch (err) {
-          showToast(`Error: ${err.message}`);
-        }
-      }
-
-      manualForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const data = {
-          name: name.value.trim(),
-          email: email.value.trim(),
-          password: password.value,
-          dept: dept.value.trim(),
-          id: id.value.trim(),
-          phone: phone.value.trim(),
-          photoUrl: photoUrl.value.trim(),
-        };
-        await addUser(data);
-        manualForm.reset();
-        loadUsers();
-      });
-
-      csvFile.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        Papa.parse(file, {
-          header: true,
-          complete: (results) => {
-            csvData = results.data;
-            showToast(`Loaded ${csvData.length} users`);
-          },
-        });
-      });
-
-      importCsvBtn.addEventListener("click", async () => {
-        for (const user of csvData) await addUser(user);
-        showToast("CSV Import Complete!");
-        loadUsers();
-      });
-
-      async function loadUsers() {
-        usersTableBody.innerHTML = "";
-        const snapshot = await db.collection("users").get();
-        snapshot.forEach((doc) => {
-          const user = doc.data();
-          usersTableBody.innerHTML += `
-            <tr>
-              <td><img src="${user.photoUrl || ""}" class="user-avatar"/></td>
-              <td>${user.name}</td>
-              <td>${user.email}</td>
-              <td>${user.dept}</td>
-              <td>${user.customId}</td>
-              <td>${user.phoneNumber}</td>
-              <td>${user.isOnline ? "✅" : "❌"}</td>
-            </tr>`;
-        });
-      }
-      loadUsers();
-    </script>
-  </body>
-</html>
-```
-
----
 ````markdown
-# V-COMM Firebase Admin Panel
+---
 
-This is a lightweight **Admin Panel** for managing users in the **V-COMM** Firebase project.  
+# Firebase Admin Panel
+
+This is a lightweight Admin Panel for managing users in the V-COMM Firebase project.  
 It allows you to create users manually or import them from a CSV file.
 
 ---
 
-##  Features
+## Features
 
 - Manual user creation (email, password, department, etc.)
 - CSV bulk user import (using PapaParse)
@@ -684,15 +401,15 @@ It allows you to create users manually or import them from a CSV file.
 
 ---
 
-##  Prerequisites
+## Prerequisites
 
 You’ll need:
-- A Firebase project with **Authentication** and **Firestore** enabled
-- Your own **Firebase Web API credentials**
+- A Firebase project with Authentication and Firestore enabled
+- Your own Firebase Web API credentials
 
 ---
 
-##  Setup Instructions
+## Setup Instructions
 
 1. Go to your Firebase Console → Project Settings → “General” tab  
 2. Scroll to **Your apps → Web App**  
@@ -712,10 +429,10 @@ You’ll need:
 
 ---
 
-##  Usage
+## Usage
 
 1. Open `index.html` in your browser (no server required).
-2. Use the **Manual Form** to add users individually.
+2. Use the Manual Form to add users individually.
 3. Or import a CSV file with the following columns:
 
    ```
@@ -725,7 +442,7 @@ You’ll need:
 
 ---
 
-##  Example CSV
+## Example CSV
 
 ```
 Name,Email,Password,Dept,ID,Phone,PhotoUrl
@@ -734,7 +451,7 @@ John Doe,john@example.com,pass123,IT,EMP001,9876543210,https://drive.google.com/
 
 ---
 
-##  Important Notes
+## Important Notes
 
 * Do **NOT** commit your Firebase credentials to GitHub.
 * Always use test accounts when trying bulk imports.
@@ -742,19 +459,21 @@ John Doe,john@example.com,pass123,IT,EMP001,9876543210,https://drive.google.com/
 
 ---
 
-##  Developer
+## Developer
 
 **Rupesh Malisetty**
-📧 [mrupesh2005@gmail.com](mailto:mrupesh2005@gmail.com)
+Email: [mrupesh2005@gmail.com](mailto:mrupesh2005@gmail.com)
 
 ---
 
 **Last Updated:** November 2025
 
-```
 
----
-```
+
+
+
 
 
 Good luck with your V-COMM setup! 
+
+```
