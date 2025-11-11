@@ -376,10 +376,7 @@ For Firebase-specific issues:
    - Test on multiple devices
 
 ---
-Sure — here’s the **exact section** you can **paste at the end of your main README** (after your V-COMM Flutter setup).
-It’s the **Firebase Admin Panel** documentation only — clean, formatted, and safe.
 
----
 
 ````markdown
 ---
