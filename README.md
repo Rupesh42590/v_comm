@@ -422,7 +422,7 @@ You’ll need:
    };
 ````
 
-4. Replace the placeholder config inside `index.html`
+4. Replace the placeholder config inside `firebase-admin-panel/index.html`
 
 ---
 
@@ -459,9 +459,8 @@ John Doe,john@example.com,pass123,IT,EMP001,9876543210,https://drive.google.com/
 ## Developer
 
 **Rupesh Malisetty**
-Email: [mrupesh2005@gmail.com](mailto:mrupesh2005@gmail.com)
+*Email: [mrupesh2005@gmail.com](mailto:mrupesh2005@gmail.com)*
 
 ---
 
-**Last Updated:** November 2025
 
