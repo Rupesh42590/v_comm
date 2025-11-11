@@ -5,7 +5,7 @@
 
 ##  About V-COMM
 
-V-COMM is a comprehensive campus communication and management platform built with Flutter. It provides students and faculty with tools for messaging, event management, timetable sharing, and presence tracking - all in one unified application.
+V-COMM is an all-in-one campus communication and management platform built with Flutter. It provides faculty with tools for messaging, event management, timetable sharing, and presence tracking - all in one unified application.
 
 ### Key Features
 
